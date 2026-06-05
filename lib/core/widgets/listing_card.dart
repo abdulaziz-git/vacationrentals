@@ -27,6 +27,9 @@ class ListingCard extends ConsumerWidget {
               children: [
                 PhotoPlaceholder(
                   seedColor: listing.heroColor,
+                  imageAsset: listing.photos.isNotEmpty
+                      ? listing.photos.first
+                      : null,
                   height: 200,
                   label: listing.propertyType.label,
                   photoCount: listing.photoCount,
@@ -179,6 +182,9 @@ class ListingCardCompact extends ConsumerWidget {
                 children: [
                   PhotoPlaceholder(
                     seedColor: listing.heroColor,
+                    imageAsset: listing.photos.isNotEmpty
+                        ? listing.photos.first
+                        : null,
                     height: 150,
                     label: listing.propertyType.label,
                     photoCount: listing.photoCount,
@@ -274,6 +280,9 @@ class ListingListRow extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(18),
                   child: PhotoPlaceholder(
                     seedColor: listing.heroColor,
+                    imageAsset: listing.photos.isNotEmpty
+                        ? listing.photos.first
+                        : null,
                     height: 104,
                     width: 96,
                   ),
@@ -443,6 +452,9 @@ class ListingGridCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: PhotoPlaceholder(
                   seedColor: listing.heroColor,
+                  imageAsset: listing.photos.isNotEmpty
+                      ? listing.photos.first
+                      : null,
                   height: 150,
                   label: listing.propertyType.label,
                 ),

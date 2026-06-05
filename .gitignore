@@ -46,3 +46,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local image-extraction scratch output (regenerate via extract_images.py)
+vrlbi_html/extracted_images/

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-/// Renders a gradient placeholder standing in for a listing photo. Keeps the
-/// mock build fully offline (no network image fetch). Replace with a real
-/// image widget once photo URLs are wired up.
+/// Renders a listing photo from a bundled asset ([imageAsset]); when absent
+/// (or the asset fails to load) it falls back to a solid [seedColor] block
+/// with a camera icon, so the mock build degrades gracefully.
 class PhotoPlaceholder extends StatelessWidget {
   const PhotoPlaceholder({
     super.key,
     required this.seedColor,
     required this.height,
     this.width = double.infinity,
+    this.imageAsset,
     this.label,
     this.photoCount,
     this.icon = Icons.photo_camera_outlined,
@@ -17,6 +18,9 @@ class PhotoPlaceholder extends StatelessWidget {
   final int seedColor;
   final double height;
   final double width;
+
+  /// Optional bundled image asset path; rendered with [BoxFit.cover].
+  final String? imageAsset;
   final String? label;
   final int? photoCount;
   final IconData icon;
@@ -24,19 +28,25 @@ class PhotoPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final base = Color(seedColor);
-    return Container(
+    Widget colorBlock() => Container(
+      color: base,
+      alignment: Alignment.center,
+      child: Icon(icon, size: 40, color: Colors.white.withValues(alpha: 0.55)),
+    );
+    return SizedBox(
       height: height,
       width: width,
-      color: base,
       child: Stack(
+        fit: StackFit.expand,
         children: [
-          Center(
-            child: Icon(
-              icon,
-              size: 40,
-              color: Colors.white.withValues(alpha: 0.55),
-            ),
-          ),
+          if (imageAsset != null)
+            Image.asset(
+              imageAsset!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => colorBlock(),
+            )
+          else
+            colorBlock(),
           if (label != null)
             Positioned(
               left: 12,

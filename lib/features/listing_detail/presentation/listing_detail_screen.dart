@@ -88,6 +88,9 @@ class _DetailBody extends ConsumerWidget {
                 children: [
                   PhotoPlaceholder(
                     seedColor: listing.heroColor,
+                    imageAsset: listing.photos.isNotEmpty
+                        ? listing.photos.first
+                        : null,
                     height: 280,
                     icon: Icons.image_outlined,
                   ),

@@ -143,8 +143,32 @@ class MockListingsRepository implements ListingsRepository {
     ),
   );
 
+  // ---- Real photo pool (assets bundled from the VRLBI scrape) --------------
+  /// Number of `assets/listing_photos/photo_NNN.jpg` files (see pubspec).
+  static const _photoPoolSize = 180;
+
+  static String _photoAsset(int i) =>
+      'assets/listing_photos/photo_${(i % _photoPoolSize).toString().padLeft(3, '0')}.jpg';
+
+  /// Assigns each listing a contiguous slice of the photo pool (6–14 each),
+  /// advancing a shared cursor so hero photos stay distinct across listings.
+  List<Listing> _withPhotos(List<Listing> items) {
+    var cursor = 0;
+    return [
+      for (final l in items)
+        () {
+          final count = l.photoCount.clamp(6, 14);
+          final photos = [
+            for (var i = 0; i < count; i++) _photoAsset(cursor + i),
+          ];
+          cursor += count;
+          return l.withPhotos(photos);
+        }(),
+    ];
+  }
+
   // ---- A spread of catalog listings (from the search results scrape) -------
-  late final List<Listing> _catalog = [
+  late final List<Listing> _catalog = _withPhotos([
     _baysideBeauty,
     _make(
       '1',
@@ -348,7 +372,7 @@ class MockListingsRepository implements ListingsRepository {
       rating: 4.2,
       reviews: 15,
     ),
-  ];
+  ]);
 
   Listing _make(
     String id,

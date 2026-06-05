@@ -24,7 +24,10 @@ final _shellKey = GlobalKey<NavigatorState>();
 /// Initial location. Honors a `START_ROUTE` define (used to deep-link into a
 /// single screen during simulator verification, e.g.
 /// `--dart-define=START_ROUTE=/search`); defaults to `/home`.
-const _startRoute = String.fromEnvironment('START_ROUTE', defaultValue: '/home');
+const _startRoute = String.fromEnvironment(
+  'START_ROUTE',
+  defaultValue: '/home',
+);
 
 final appRouter = GoRouter(
   navigatorKey: _rootKey,
@@ -42,30 +45,38 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/search',
-            builder: (context, state) => const SearchScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/saved',
-            builder: (context, state) => const FavoritesScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/trips',
-            builder: (context, state) => const TripsScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/account',
-            builder: (context, state) => const AccountScreen(),
-          ),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/search',
+              builder: (context, state) => const SearchScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/saved',
+              builder: (context, state) => const FavoritesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/trips',
+              builder: (context, state) => const TripsScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/account',
+              builder: (context, state) => const AccountScreen(),
+            ),
+          ],
+        ),
       ],
     ),
     GoRoute(

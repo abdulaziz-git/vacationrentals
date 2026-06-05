@@ -28,10 +28,10 @@ final listingByIdProvider = FutureProvider.family<Listing?, String>(
 /// Other rentals from the same owner (detail screen "nearby / more from host").
 final ownerListingsProvider =
     FutureProvider.family<List<Listing>, ({String owner, String excludeId})>(
-  (ref, arg) => ref
-      .watch(listingsRepositoryProvider)
-      .byOwner(arg.owner, excludeId: arg.excludeId),
-);
+      (ref, arg) => ref
+          .watch(listingsRepositoryProvider)
+          .byOwner(arg.owner, excludeId: arg.excludeId),
+    );
 
 /// The static list of towns for filter UIs.
 final townsProvider = Provider<List<Town>>(

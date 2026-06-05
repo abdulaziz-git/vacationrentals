@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// A row of 5 stars rendering a fractional [rating].
 class RatingStars extends StatelessWidget {
   const RatingStars({super.key, required this.rating, this.size = 16});
@@ -20,7 +22,7 @@ class RatingStars extends StatelessWidget {
         } else {
           icon = Icons.star_border;
         }
-        return Icon(icon, size: size, color: const Color(0xFFF5A623));
+        return Icon(icon, size: size, color: AppTheme.sun);
       }),
     );
   }

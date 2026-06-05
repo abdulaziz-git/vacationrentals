@@ -29,24 +29,31 @@ class RatesTable extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(r.label,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 15)),
+                    child: Text(
+                      r.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                   Text(
                     r.weekly != null
                         ? '${Format.money(r.weekly!)}/wk'
                         : '${Format.money(r.nightly!)}/night',
                     style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        color: AppTheme.ocean),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: AppTheme.ocean,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
-              Text('${fmt.format(r.start)} – ${fmt.format(r.end)}',
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+              Text(
+                '${fmt.format(r.start)} – ${fmt.format(r.end)}',
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -67,19 +74,19 @@ class RatesTable extends StatelessWidget {
   }
 
   Widget _pill(IconData icon, String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: Colors.black54),
-            const SizedBox(width: 5),
-            Text(text, style: const TextStyle(fontSize: 12.5)),
-          ],
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.grey.shade300),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: Colors.black54),
+        const SizedBox(width: 5),
+        Text(text, style: const TextStyle(fontSize: 12.5)),
+      ],
+    ),
+  );
 }

@@ -70,8 +70,10 @@ class _SignupScreenState extends State<SignupScreen> {
           controlAffinity: ListTileControlAffinity.leading,
           contentPadding: EdgeInsets.zero,
           activeColor: AppTheme.ocean,
-          title: Text('I agree to the Terms & Privacy Policy',
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 13.5)),
+          title: Text(
+            'I agree to the Terms & Privacy Policy',
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 13.5),
+          ),
         ),
         const SizedBox(height: 8),
         FilledButton(
@@ -85,9 +87,13 @@ class _SignupScreenState extends State<SignupScreen> {
             const Text('Already have an account? '),
             GestureDetector(
               onTap: () => context.pushReplacement('/login'),
-              child: const Text('Log in',
-                  style: TextStyle(
-                      color: AppTheme.ocean, fontWeight: FontWeight.w700)),
+              child: const Text(
+                'Log in',
+                style: TextStyle(
+                  color: AppTheme.ocean,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),

@@ -19,32 +19,37 @@ class AccountScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.ocean, Color(0xFF0A567A)],
-              ),
+              color: AppTheme.ocean,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Welcome to VRLBI',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800)),
+                const Text(
+                  'Welcome to VRLBI',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text('Log in to manage trips, saved homes, and quotes.',
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        height: 1.4)),
+                Text(
+                  'Log in to manage trips, saved homes, and quotes.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    height: 1.4,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppTheme.ocean),
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppTheme.ocean,
+                        ),
                         onPressed: () => context.push('/login'),
                         child: const Text('Log in'),
                       ),
@@ -88,15 +93,19 @@ class AccountScreen extends ConsumerWidget {
           ]),
           const SizedBox(height: 24),
           Center(
-            child: Text('VRLBI · Vacation Rentals Jersey Shore LLC\n'
-                '518 Central Ave, Ship Bottom, NJ 08008',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+            child: Text(
+              'VRLBI · Vacation Rentals Jersey Shore LLC\n'
+              '518 Central Ave, Ship Bottom, NJ 08008',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+            ),
           ),
           const SizedBox(height: 8),
           Center(
-            child: Text('v1.0.0 (mockup build)',
-                style: TextStyle(color: Colors.grey.shade400, fontSize: 12)),
+            child: Text(
+              'v1.0.0 (mockup build)',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+            ),
           ),
         ],
       ),
@@ -104,27 +113,30 @@ class AccountScreen extends ConsumerWidget {
   }
 
   Widget _group(String title, List<Widget> rows) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Text(title,
-                style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.deepSea)),
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 4, bottom: 8),
+        child: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.deepSea,
           ),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Column(children: rows),
-          ),
-        ],
-      );
+        ),
+      ),
+      Card(
+        margin: EdgeInsets.zero,
+        child: Column(children: rows),
+      ),
+    ],
+  );
 
   Widget _row(IconData icon, String label) => ListTile(
-        leading: Icon(icon, color: AppTheme.ocean),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-        trailing: const Icon(Icons.chevron_right, size: 20),
-        onTap: () {},
-      );
+    leading: Icon(icon, color: AppTheme.ocean),
+    title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+    trailing: const Icon(Icons.chevron_right, size: 20),
+    onTap: () {},
+  );
 }

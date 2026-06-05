@@ -17,13 +17,15 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
   int _monthOffset = 0;
 
   Map<DateTime, DayStatus> get _byDate => {
-        for (final d in widget.days)
-          DateTime(d.date.year, d.date.month, d.date.day): d.status
-      };
+    for (final d in widget.days)
+      DateTime(d.date.year, d.date.month, d.date.day): d.status,
+  };
 
   @override
   Widget build(BuildContext context) {
-    final first = widget.days.isEmpty ? DateTime(2026, 6) : widget.days.first.date;
+    final first = widget.days.isEmpty
+        ? DateTime(2026, 6)
+        : widget.days.first.date;
     final base = DateTime(first.year, first.month + _monthOffset);
     return Column(
       children: [
@@ -37,9 +39,13 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
             ),
             Expanded(
               child: Center(
-                child: Text(_monthName(base),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 16)),
+                child: Text(
+                  _monthName(base),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
             IconButton(
@@ -68,8 +74,18 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
 
   String _monthName(DateTime d) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[d.month - 1]} ${d.year}';
   }
@@ -81,15 +97,20 @@ class _Weekdays extends StatelessWidget {
     const labels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     return Row(
       children: labels
-          .map((l) => Expanded(
-                child: Center(
-                  child: Text(l,
-                      style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+          .map(
+            (l) => Expanded(
+              child: Center(
+                child: Text(
+                  l,
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -143,13 +164,16 @@ class _DayCell extends StatelessWidget {
               : null,
         ),
         child: Center(
-          child: Text('$day',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: status == DayStatus.notAvailable
-                      ? Colors.grey.shade400
-                      : AppTheme.deepSea)),
+          child: Text(
+            '$day',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: status == DayStatus.notAvailable
+                  ? Colors.grey.shade400
+                  : AppTheme.deepSea,
+            ),
+          ),
         ),
       ),
     );

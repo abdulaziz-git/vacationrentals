@@ -26,13 +26,7 @@ class _MapResultsViewState extends State<MapResultsView> {
         // Stylized water backdrop.
         Positioned.fill(
           child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFBFE3F2), Color(0xFF9FCFE8)],
-              ),
-            ),
+            decoration: const BoxDecoration(color: Color(0xFFBFE3F2)),
             child: CustomPaint(painter: _IslandPainter()),
           ),
         ),
@@ -63,8 +57,11 @@ class _MapResultsViewState extends State<MapResultsView> {
 }
 
 class _PricePin extends StatelessWidget {
-  const _PricePin(
-      {required this.label, required this.active, required this.onTap});
+  const _PricePin({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
   final String label;
   final bool active;
   final VoidCallback onTap;
@@ -81,16 +78,20 @@ class _PricePin extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 6,
-                offset: const Offset(0, 2)),
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
-        child: Text(label,
-            style: TextStyle(
-                color: active ? Colors.white : AppTheme.deepSea,
-                fontWeight: FontWeight.w800,
-                fontSize: 13)),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? Colors.white : AppTheme.deepSea,
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+          ),
+        ),
       ),
     );
   }
@@ -118,8 +119,10 @@ class _PeekCard extends StatelessWidget {
                   width: 84,
                   height: 84,
                   color: Color(listing.heroColor),
-                  child: const Icon(Icons.photo_camera_outlined,
-                      color: Colors.white54),
+                  child: const Icon(
+                    Icons.photo_camera_outlined,
+                    color: Colors.white54,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -128,23 +131,33 @@ class _PeekCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(listing.town.path,
-                        style: const TextStyle(
-                            color: AppTheme.ocean,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      listing.town.path,
+                      style: const TextStyle(
+                        color: AppTheme.ocean,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(listing.title.replaceAll('**', ''),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 14)),
+                    Text(
+                      listing.title.replaceAll('**', ''),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                        '${listing.bedrooms} bd · Sleeps ${listing.sleeps} · '
-                        '${Format.money(listing.weeklyFrom)}/wk',
-                        style: const TextStyle(
-                            fontSize: 12.5, color: Colors.black54)),
+                      '${listing.bedrooms} bd · Sleeps ${listing.sleeps} · '
+                      '${Format.money(listing.weeklyFrom)}/wk',
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -172,8 +185,11 @@ class _IslandPainter extends CustomPainter {
     final road = Paint()
       ..color = const Color(0xFFC9BFA3)
       ..strokeWidth = 3;
-    canvas.drawLine(Offset(size.width * 0.49, 0),
-        Offset(size.width * 0.45, size.height), road);
+    canvas.drawLine(
+      Offset(size.width * 0.49, 0),
+      Offset(size.width * 0.45, size.height),
+      road,
+    );
   }
 
   @override

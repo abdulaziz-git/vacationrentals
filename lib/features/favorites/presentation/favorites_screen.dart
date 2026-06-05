@@ -27,18 +27,15 @@ class FavoritesScreen extends ConsumerWidget {
         error: (e, _) =>
             ErrorStateView(onRetry: () => ref.invalidate(allListingsProvider)),
         data: (listings) {
-          final saved =
-              listings.where((l) => favIds.contains(l.id)).toList();
+          final saved = listings.where((l) => favIds.contains(l.id)).toList();
           if (saved.isEmpty) {
             return EmptyState(
               icon: Icons.favorite_border,
               title: 'No saved rentals',
-              message:
-                  'Tap the heart on any rental to save it here for later.',
+              message: 'Tap the heart on any rental to save it here for later.',
               action: FilledButton(
                 onPressed: () => context.go('/search'),
-                style:
-                    FilledButton.styleFrom(minimumSize: const Size(200, 48)),
+                style: FilledButton.styleFrom(minimumSize: const Size(200, 48)),
                 child: const Text('Browse rentals'),
               ),
             );

@@ -54,7 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-              onPressed: () {}, child: const Text('Forgot password?')),
+            onPressed: () {},
+            child: const Text('Forgot password?'),
+          ),
         ),
         const SizedBox(height: 8),
         FilledButton(
@@ -85,9 +87,13 @@ class _LoginScreenState extends State<LoginScreen> {
             const Text("New to VRLBI? "),
             GestureDetector(
               onTap: () => context.pushReplacement('/signup'),
-              child: const Text('Sign up',
-                  style: TextStyle(
-                      color: AppTheme.ocean, fontWeight: FontWeight.w700)),
+              child: const Text(
+                'Sign up',
+                style: TextStyle(
+                  color: AppTheme.ocean,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),

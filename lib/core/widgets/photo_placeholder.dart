@@ -8,6 +8,7 @@ class PhotoPlaceholder extends StatelessWidget {
     super.key,
     required this.seedColor,
     required this.height,
+    this.width = double.infinity,
     this.label,
     this.photoCount,
     this.icon = Icons.photo_camera_outlined,
@@ -15,6 +16,7 @@ class PhotoPlaceholder extends StatelessWidget {
 
   final int seedColor;
   final double height;
+  final double width;
   final String? label;
   final int? photoCount;
   final IconData icon;
@@ -24,39 +26,35 @@ class PhotoPlaceholder extends StatelessWidget {
     final base = Color(seedColor);
     return Container(
       height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            base.withValues(alpha: 0.95),
-            Color.lerp(base, Colors.black, 0.35)!,
-          ],
-        ),
-      ),
+      width: width,
+      color: base,
       child: Stack(
         children: [
           Center(
-            child: Icon(icon,
-                size: 40, color: Colors.white.withValues(alpha: 0.55)),
+            child: Icon(
+              icon,
+              size: 40,
+              color: Colors.white.withValues(alpha: 0.55),
+            ),
           ),
           if (label != null)
             Positioned(
               left: 12,
               bottom: 12,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(label!,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
+                child: Text(
+                  label!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           if (photoCount != null)
@@ -64,8 +62,7 @@ class PhotoPlaceholder extends StatelessWidget {
               right: 12,
               bottom: 12,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(20),
@@ -73,14 +70,20 @@ class PhotoPlaceholder extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.collections_outlined,
-                        size: 13, color: Colors.white),
+                    const Icon(
+                      Icons.collections_outlined,
+                      size: 13,
+                      color: Colors.white,
+                    ),
                     const SizedBox(width: 4),
-                    Text('$photoCount',
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600)),
+                    Text(
+                      '$photoCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),

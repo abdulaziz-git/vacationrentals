@@ -15,8 +15,8 @@ class SearchQueryController extends StateNotifier<ListingQuery> {
 
 final searchQueryProvider =
     StateNotifierProvider<SearchQueryController, ListingQuery>(
-  (ref) => SearchQueryController(),
-);
+      (ref) => SearchQueryController(),
+    );
 
 /// Results for the current query.
 final searchResultsProvider = FutureProvider<List<Listing>>((ref) {
@@ -25,7 +25,8 @@ final searchResultsProvider = FutureProvider<List<Listing>>((ref) {
 });
 
 /// Toggle between list and map presentation of the results.
-final resultsViewProvider =
-    StateProvider<ResultsView>((ref) => ResultsView.list);
+final resultsViewProvider = StateProvider<ResultsView>(
+  (ref) => ResultsView.list,
+);
 
 enum ResultsView { list, map }

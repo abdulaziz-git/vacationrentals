@@ -33,6 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
         TextField(
           controller: _email,
           keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          autocorrect: false,
           decoration: const InputDecoration(
             labelText: 'Email',
             prefixIcon: Icon(Icons.mail_outline),
@@ -42,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
         TextField(
           controller: _password,
           obscureText: _obscure,
+          autofillHints: const [AutofillHints.password],
           decoration: InputDecoration(
             labelText: 'Password',
             prefixIcon: const Icon(Icons.lock_outline),
@@ -54,7 +57,22 @@ class _LoginScreenState extends State<LoginScreen> {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () {},
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: const Text('Reset password'),
+                content: const Text(
+                  'Enter your account email and we\'ll send reset '
+                  'instructions. (Available once accounts are live.)',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            ),
             child: const Text('Forgot password?'),
           ),
         ),
@@ -76,7 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 16),
         OutlinedButton.icon(
-          onPressed: () {},
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Sign in with Apple is coming soon')),
+          ),
           icon: const Icon(Icons.apple, size: 22),
           label: const Text('Continue with Apple'),
         ),

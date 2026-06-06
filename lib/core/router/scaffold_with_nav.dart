@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/app_theme.dart';
@@ -28,7 +29,7 @@ class ScaffoldWithNav extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
@@ -47,10 +48,10 @@ class ScaffoldWithNav extends StatelessWidget {
                   activeIcon: _items[i].$2,
                   label: _items[i].$3,
                   selected: i == shell.currentIndex,
-                  onTap: () => shell.goBranch(
-                    i,
-                    initialLocation: i == shell.currentIndex,
-                  ),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    shell.goBranch(i, initialLocation: i == shell.currentIndex);
+                  },
                 ),
             ],
           ),

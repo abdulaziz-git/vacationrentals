@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/favorites/application/favorites_controller.dart';
+import '../../features/favorites/presentation/favorite_actions.dart';
 import '../../features/listings/domain/listing.dart';
 import '../theme/app_theme.dart';
 import 'photo_placeholder.dart';
@@ -15,7 +16,9 @@ class ListingCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFav = ref.watch(favoritesProvider).contains(listing.id);
+    final isFav = ref.watch(
+      favoritesProvider.select((s) => s.contains(listing.id)),
+    );
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
@@ -39,8 +42,7 @@ class ListingCard extends ConsumerWidget {
                   right: 12,
                   child: _FavButton(
                     active: isFav,
-                    onTap: () =>
-                        ref.read(favoritesProvider.notifier).toggle(listing.id),
+                    onTap: () => toggleFavorite(context, ref, listing.id),
                   ),
                 ),
                 if (listing.badges.isNotEmpty)
@@ -75,7 +77,7 @@ class ListingCard extends ConsumerWidget {
                         ),
                       ),
                       if (listing.reviewAverage > 0) ...[
-                        const Icon(Icons.star, size: 15, color: AppTheme.sun),
+                        const Icon(Icons.star, size: 15, color: AppTheme.star),
                         const SizedBox(width: 2),
                         Text(
                           listing.reviewAverage.toStringAsFixed(1),
@@ -168,7 +170,9 @@ class ListingCardCompact extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFav = ref.watch(favoritesProvider).contains(listing.id);
+    final isFav = ref.watch(
+      favoritesProvider.select((s) => s.contains(listing.id)),
+    );
     return SizedBox(
       width: 250,
       child: Card(
@@ -194,9 +198,7 @@ class ListingCardCompact extends ConsumerWidget {
                     right: 10,
                     child: _FavButton(
                       active: isFav,
-                      onTap: () => ref
-                          .read(favoritesProvider.notifier)
-                          .toggle(listing.id),
+                      onTap: () => toggleFavorite(context, ref, listing.id),
                     ),
                   ),
                 ],
@@ -310,7 +312,11 @@ class ListingListRow extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.star, size: 13, color: AppTheme.sun),
+                          const Icon(
+                            Icons.star,
+                            size: 13,
+                            color: AppTheme.star,
+                          ),
                           const SizedBox(width: 3),
                           Text(
                             listing.reviewAverage.toStringAsFixed(1),
@@ -439,7 +445,9 @@ class ListingGridCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFav = ref.watch(favoritesProvider).contains(listing.id);
+    final isFav = ref.watch(
+      favoritesProvider.select((s) => s.contains(listing.id)),
+    );
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () => context.push('/listing/${listing.id}'),
@@ -464,8 +472,7 @@ class ListingGridCard extends ConsumerWidget {
                 right: 10,
                 child: _FavButton(
                   active: isFav,
-                  onTap: () =>
-                      ref.read(favoritesProvider.notifier).toggle(listing.id),
+                  onTap: () => toggleFavorite(context, ref, listing.id),
                 ),
               ),
             ],
@@ -523,18 +530,24 @@ class _FavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(7),
-          child: Icon(
-            active ? Icons.favorite : Icons.favorite_border,
-            size: 20,
-            color: active ? AppTheme.heart : Colors.black54,
+    return Semantics(
+      button: true,
+      label: active ? 'Remove from saved' : 'Save listing',
+      child: Material(
+        color: Colors.white,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          // 44×44 minimum hit target (HIG) even though the glyph is smaller.
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              active ? Icons.favorite : Icons.favorite_border,
+              size: 20,
+              color: active ? AppTheme.heart : Colors.black54,
+            ),
           ),
         ),
       ),

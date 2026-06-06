@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -74,7 +75,8 @@ class HomeScreen extends ConsumerWidget {
                     ),
             ),
             const SliverToBoxAdapter(child: _BrowseByRegion()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            // Clear the floating bottom nav (extendBody: true).
+            const SliverToBoxAdapter(child: SizedBox(height: 96)),
           ],
         ),
       ),
@@ -87,95 +89,108 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        MediaQuery.of(context).padding.top + 12,
-        20,
-        24,
-      ),
-      decoration: const BoxDecoration(
-        color: AppTheme.ocean,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text(
-                'VRLBI',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Book Direct · No Fees',
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Light status-bar glyphs over the solid-blue hero.
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          MediaQuery.of(context).padding.top + 12,
+          20,
+          24,
+        ),
+        decoration: const BoxDecoration(
+          color: AppTheme.ocean,
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  'VRLBI',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
                   ),
                 ),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_none, color: Colors.white),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              const Icon(Icons.place, size: 16, color: AppTheme.sun),
-              const SizedBox(width: 5),
-              Text(
-                'Long Beach Island, NJ',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Book Direct · No Fees',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.keyboard_arrow_down,
-                size: 18,
-                color: Colors.white,
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Text.rich(
-            TextSpan(
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                height: 1.15,
-                fontWeight: FontWeight.w800,
-              ),
-              children: [
-                TextSpan(text: 'Find your Long Beach\nIsland '),
-                TextSpan(
-                  text: 'getaway',
-                  style: TextStyle(color: AppTheme.sun),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Notifications',
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No new notifications')),
+                  ),
+                  icon: const Icon(
+                    Icons.notifications_none,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 18),
-          _SearchPrompt(),
-        ],
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.place, size: 16, color: AppTheme.sun),
+                const SizedBox(width: 5),
+                Text(
+                  'Long Beach Island, NJ',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Text.rich(
+              TextSpan(
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                ),
+                children: [
+                  TextSpan(text: 'Find your Long Beach\nIsland '),
+                  TextSpan(
+                    text: 'getaway',
+                    style: TextStyle(color: AppTheme.sun),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            _SearchPrompt(),
+          ],
+        ),
       ),
     );
   }

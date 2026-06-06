@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../listings/domain/listing.dart';
@@ -132,7 +133,7 @@ class _MonthGrid extends StatelessWidget {
     for (var day = 1; day <= daysInMonth; day++) {
       final date = DateTime(month.year, month.month, day);
       final status = byDate[date];
-      cells.add(_DayCell(day: day, status: status));
+      cells.add(_DayCell(date: date, status: status));
     }
     return GridView.count(
       crossAxisCount: 7,
@@ -145,15 +146,24 @@ class _MonthGrid extends StatelessWidget {
 }
 
 class _DayCell extends StatelessWidget {
-  const _DayCell({required this.day, this.status});
-  final int day;
+  const _DayCell({required this.date, this.status});
+  final DateTime date;
   final DayStatus? status;
 
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(status);
     final available = status == DayStatus.available;
-    return Padding(
+    final booked = status == DayStatus.notAvailable;
+    // Non-colour status cue (WCAG 1.4.1): booked is struck through, pending is
+    // underlined, available carries a border — so colour-blind / low-vision
+    // users can still distinguish states.
+    final decoration = booked
+        ? TextDecoration.lineThrough
+        : status == DayStatus.pending
+        ? TextDecoration.underline
+        : TextDecoration.none;
+    final cell = Padding(
       padding: const EdgeInsets.all(2),
       child: Container(
         decoration: BoxDecoration(
@@ -165,20 +175,28 @@ class _DayCell extends StatelessWidget {
         ),
         child: Center(
           child: Text(
-            '$day',
+            '${date.day}',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: status == DayStatus.notAvailable
-                  ? Colors.grey.shade400
-                  : AppTheme.deepSea,
+              decoration: decoration,
+              color: booked ? Colors.grey.shade400 : AppTheme.deepSea,
             ),
           ),
         ),
       ),
     );
+    final label = '${DateFormat.MMMMd().format(date)}, ${_statusText(status)}';
+    return Semantics(label: label, child: cell);
   }
 }
+
+String _statusText(DayStatus? s) => switch (s) {
+  DayStatus.available => 'available',
+  DayStatus.pending => 'pending',
+  DayStatus.notAvailable => 'booked',
+  DayStatus.noRates || null => 'no rates',
+};
 
 Color _statusColor(DayStatus? s) {
   switch (s) {

@@ -116,6 +116,21 @@ class _SkeletonBoxState extends State<SkeletonBox>
 
   @override
   Widget build(BuildContext context) {
+    // Honor the OS "Reduce Motion" setting — show a static block instead of a
+    // repeating shimmer.
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (reduceMotion) {
+      if (_c.isAnimating) _c.stop();
+      return Container(
+        height: widget.height,
+        width: widget.width,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(widget.radius),
+        ),
+      );
+    }
+    if (!_c.isAnimating) _c.repeat(reverse: true);
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) => Container(

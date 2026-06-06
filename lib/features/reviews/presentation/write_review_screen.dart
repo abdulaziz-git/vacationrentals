@@ -47,7 +47,7 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
                   onPressed: () => setState(() => _rating = i + 1),
                   icon: Icon(
                     filled ? Icons.star : Icons.star_border,
-                    color: AppTheme.sun,
+                    color: AppTheme.star,
                   ),
                 );
               }),

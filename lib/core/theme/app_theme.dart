@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 /// VRLBI brand palette (mirrors the live vrlbi.com site: brand blue + sun
-/// yellow) wrapped in a rounded, card-first Material 3 theme inspired by the
-/// "Rent House" reference layout — pill buttons, soft cards, playful accents.
-///
-/// Constant names are kept stable (ocean / deepSea / sunset / seafoam / sand)
-/// so existing widgets re-skin automatically; only their VALUES + roles moved
-/// to the blue/yellow scheme.
+/// yellow) wrapped in a rounded, card-first Material 3 theme — pill buttons,
+/// soft cards, playful accents. Provides both [light] and [dark] variants
+/// driven by a shared [_build] so component styling stays consistent.
 class AppTheme {
   AppTheme._();
 
@@ -19,8 +18,12 @@ class AppTheme {
   /// Sun-yellow accent (badges, highlights, active chips). VRLBI `#FFDC00`.
   static const Color sunset = Color(0xFFFFC400);
 
-  /// True brand yellow for rating stars / fine accents.
+  /// True brand yellow for fine accents on dark/colored surfaces only.
   static const Color sun = Color(0xFFFFDC00);
+
+  /// Accessible gold for rating stars on light surfaces (≈3:1 contrast vs the
+  /// brand yellow's 1.36:1, satisfying WCAG 1.4.11 for graphical objects).
+  static const Color star = Color(0xFFB8860B);
 
   /// Sky-blue secondary (browse tiles, soft accents). VRLBI `#5dacd6`.
   static const Color seafoam = Color(0xFF2EA6E0);
@@ -34,38 +37,52 @@ class AppTheme {
   /// Pale blue tint used for icon chips and category tiles.
   static const Color tint = Color(0xFFEAF3FF);
 
-  /// App scaffold background — a barely-there cool grey-blue.
+  /// App scaffold background — a barely-there cool grey-blue (light only).
   static const Color canvas = Color(0xFFF4F7FB);
 
-  static ThemeData light() {
+  static ThemeData light() => _build(Brightness.light);
+  static ThemeData dark() => _build(Brightness.dark);
+
+  static ThemeData _build(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
     final scheme = ColorScheme.fromSeed(
       seedColor: ocean,
       primary: ocean,
       secondary: sunset,
       tertiary: seafoam,
-      surface: Colors.white,
-      brightness: Brightness.light,
+      brightness: brightness,
     );
+
+    // Surfaces resolve from the scheme in dark mode and from the brand
+    // light palette in light mode (preserves the established look).
+    final cardColor = isDark ? scheme.surfaceContainerHigh : Colors.white;
+    final fieldColor = isDark ? scheme.surfaceContainerHighest : Colors.white;
+    final headingColor = isDark ? scheme.onSurface : deepSea;
+    final borderColor = isDark ? scheme.outlineVariant : Colors.grey.shade300;
 
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: canvas,
+      scaffoldBackgroundColor: isDark ? scheme.surface : canvas,
       fontFamily: 'SF Pro',
     );
 
     return base.copyWith(
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         centerTitle: false,
+        // Dark glyphs on light app bars, light glyphs on dark ones.
+        systemOverlayStyle: isDark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
         titleTextStyle: TextStyle(
-          color: deepSea,
+          color: headingColor,
           fontSize: 20,
           fontWeight: FontWeight.w800,
         ),
-        iconTheme: IconThemeData(color: deepSea),
+        iconTheme: IconThemeData(color: headingColor),
       ),
       // Pill-shaped primary CTAs in brand blue (reference "Rental Now" style).
       filledButtonTheme: FilledButtonThemeData(
@@ -93,43 +110,39 @@ class AppTheme {
         ),
       ),
       chipTheme: base.chipTheme.copyWith(
-        backgroundColor: Colors.white,
-        selectedColor: tint,
+        backgroundColor: cardColor,
+        selectedColor: isDark ? scheme.primaryContainer : tint,
         checkmarkColor: ocean,
-        side: BorderSide(color: Colors.grey.shade300),
-        // Explicit dark labels for BOTH states so text is never invisible
-        // (unselected on white, selected on the light-blue tint).
-        labelStyle: const TextStyle(
-          color: deepSea,
-          fontWeight: FontWeight.w600,
-        ),
-        secondaryLabelStyle: const TextStyle(
-          color: deepSea,
+        side: BorderSide(color: borderColor),
+        // Explicit labels for BOTH states so chip text is never invisible.
+        labelStyle: TextStyle(color: headingColor, fontWeight: FontWeight.w600),
+        secondaryLabelStyle: TextStyle(
+          color: headingColor,
           fontWeight: FontWeight.w600,
         ),
         shape: const StadiumBorder(),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white,
+        color: cardColor,
         shadowColor: ocean.withValues(alpha: 0.16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         clipBehavior: Clip.antiAlias,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: fieldColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 18,
           vertical: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderSide: BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
@@ -142,15 +155,16 @@ class AppTheme {
 
 /// Currency / spec formatting helpers shared across the UI.
 class Format {
-  static String money(int v) {
-    final s = v.toString();
-    final b = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) b.write(',');
-      b.write(s[i]);
-    }
-    return '\$$b';
-  }
+  Format._();
+
+  static final NumberFormat _currency = NumberFormat.currency(
+    locale: 'en_US',
+    symbol: r'$',
+    decimalDigits: 0,
+  );
+
+  /// Locale-aware currency, e.g. `$7,250` (handles grouping + negatives).
+  static String money(int v) => _currency.format(v);
 
   static String weeklyRange(int from, int? to) => to == null || to == from
       ? '${money(from)}/wk'

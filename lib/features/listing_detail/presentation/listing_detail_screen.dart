@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/external_links.dart';
 import '../../../core/widgets/amenity_icons.dart';
 import '../../../core/widgets/async_states.dart';
 import '../../../core/widgets/photo_placeholder.dart';
 import '../../../core/widgets/rating_stars.dart';
 import '../../favorites/application/favorites_controller.dart';
+import '../../favorites/presentation/favorite_actions.dart';
 import '../../listings/application/listings_providers.dart';
 import '../../listings/domain/listing.dart';
 import 'widgets/availability_calendar.dart';
@@ -59,23 +62,37 @@ class _DetailBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isFav = ref.watch(favoritesProvider).contains(listing.id);
+    final isFav = ref.watch(
+      favoritesProvider.select((s) => s.contains(listing.id)),
+    );
     return CustomScrollView(
       slivers: [
         SliverAppBar(
           expandedHeight: 280,
           pinned: true,
+          // Opaque on collapse so scrolled content is masked instead of
+          // bleeding up behind the floating buttons / status bar. The photo in
+          // flexibleSpace covers this surface while expanded.
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
           leading: _circleButton(
             context,
             Icons.arrow_back,
             () => context.pop(),
+            label: 'Back',
           ),
           actions: [
-            _circleButton(context, Icons.ios_share, () {}),
+            _circleButton(
+              context,
+              Icons.ios_share,
+              () => _shareListing(listing),
+              label: 'Share',
+            ),
             _circleButton(
               context,
               isFav ? Icons.favorite : Icons.favorite_border,
-              () => ref.read(favoritesProvider.notifier).toggle(listing.id),
+              () => toggleFavorite(context, ref, listing.id),
+              label: isFav ? 'Remove from saved' : 'Save',
               tint: isFav ? AppTheme.heart : null,
             ),
             const SizedBox(width: 6),
@@ -88,6 +105,8 @@ class _DetailBody extends ConsumerWidget {
                 children: [
                   PhotoPlaceholder(
                     seedColor: listing.heroColor,
+                    semanticLabel:
+                        'Photo of ${listing.title.replaceAll('**', '')}',
                     imageAsset: listing.photos.isNotEmpty
                         ? listing.photos.first
                         : null,
@@ -292,23 +311,46 @@ class _DetailBody extends ConsumerWidget {
     ),
   );
 
+  void _shareListing(Listing listing) {
+    final title = listing.title.replaceAll('**', '');
+    Share.share(
+      '$title in ${listing.town.name}, LBI — from '
+      '${Format.money(listing.weeklyFrom)}/week on VRLBI.',
+      subject: title,
+    );
+  }
+
   Widget _circleButton(
     BuildContext context,
     IconData icon,
     VoidCallback onTap, {
+    required String label,
     Color? tint,
   }) {
     return Padding(
       padding: const EdgeInsets.all(6),
-      child: Material(
-        color: Colors.white,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Icon(icon, size: 20, color: tint ?? AppTheme.deepSea),
+      child: Semantics(
+        button: true,
+        label: label,
+        child: Tooltip(
+          message: label,
+          child: Material(
+            color: Colors.white,
+            shape: const CircleBorder(),
+            // Soft shadow so the white circles stay visible both over the photo
+            // and over the white collapsed app bar.
+            elevation: 2,
+            shadowColor: Colors.black.withValues(alpha: 0.3),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onTap,
+              // 44×44 minimum hit target (HIG).
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: Icon(icon, size: 20, color: tint ?? AppTheme.deepSea),
+              ),
+            ),
           ),
         ),
       ),
@@ -413,10 +455,10 @@ class _Amenities extends StatelessWidget {
   }
 
   void _showAll(BuildContext context, List<Amenity> rest) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -692,7 +734,12 @@ class _OwnerRow extends StatelessWidget {
           shape: const StadiumBorder(),
           child: InkWell(
             customBorder: const StadiumBorder(),
-            onTap: () => context.push('/owner/${Uri.encodeComponent(o.name)}'),
+            onTap: () => openExternal(
+              context,
+              ExternalLinks.mapsQuery(
+                '${listing.town.name}, Long Beach Island, NJ',
+              ),
+            ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               child: Row(

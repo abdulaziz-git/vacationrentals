@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -73,7 +74,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                     child: _DateField(
                       label: 'Check-in',
                       value: _checkIn == null ? null : df.format(_checkIn!),
-                      onTap: () => _pickDate(true),
+                      onTap: _pickRange,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -81,7 +82,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                     child: _DateField(
                       label: 'Check-out',
                       value: _checkOut == null ? null : df.format(_checkOut!),
-                      onTap: () => _pickDate(false),
+                      onTap: _pickRange,
                     ),
                   ),
                 ],
@@ -100,6 +101,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                   ),
                   const Spacer(),
                   IconButton.outlined(
+                    tooltip: 'Remove guest',
                     onPressed: _guests <= 1
                         ? null
                         : () => setState(() => _guests--),
@@ -107,6 +109,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.outlined(
+                    tooltip: 'Add guest',
                     onPressed: _guests >= listing.sleeps
                         ? null
                         : () => setState(() => _guests++),
@@ -182,31 +185,30 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
     );
   }
 
-  Future<void> _pickDate(bool isCheckIn) async {
-    final initial = isCheckIn
-        ? (_checkIn ?? DateTime(2026, 6, 21))
-        : (_checkOut ??
-              (_checkIn ?? DateTime(2026, 6, 21)).add(const Duration(days: 7)));
-    final picked = await showDatePicker(
+  Future<void> _pickRange() async {
+    final initial = (_checkIn != null && _checkOut != null)
+        ? DateTimeRange(start: _checkIn!, end: _checkOut!)
+        : null;
+    final picked = await showDateRangePicker(
       context: context,
-      initialDate: initial,
       firstDate: DateTime(2026, 6),
       lastDate: DateTime(2026, 12, 31),
+      initialDateRange: initial,
+      helpText: 'Select your stay',
+      saveText: 'Done',
     );
     if (picked == null) return;
     setState(() {
-      if (isCheckIn) {
-        _checkIn = picked;
-        if (_checkOut != null && !_checkOut!.isAfter(picked)) {
-          _checkOut = picked.add(const Duration(days: 7));
-        }
-      } else {
-        _checkOut = picked;
-      }
+      _checkIn = picked.start;
+      // Guarantee at least a one-night stay if the same day is picked twice.
+      _checkOut = picked.end.isAfter(picked.start)
+          ? picked.end
+          : picked.start.add(const Duration(days: 1));
     });
   }
 
   void _submit(Listing listing) {
+    HapticFeedback.mediumImpact();
     final booking = ref.read(bookingsProvider.notifier).add(_booking(listing));
     context.pushReplacement('/booking/${booking.id}/confirmed');
   }

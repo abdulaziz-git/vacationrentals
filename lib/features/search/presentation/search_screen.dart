@@ -127,7 +127,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     return MapResultsView(items: items);
                   }
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    // Bottom pad clears the floating nav (extendBody: true).
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                     itemCount: items.length,
                     itemBuilder: (context, i) =>
                         ListingListRow(listing: items[i]),

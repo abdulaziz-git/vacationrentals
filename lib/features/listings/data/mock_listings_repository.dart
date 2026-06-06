@@ -5,6 +5,12 @@ import '../domain/listings_repository.dart';
 /// the "Bayside Beauty" detail page, amenity taxonomy). Returns Dart objects
 /// directly — no JSON yet. Replace with a REST-backed implementation later.
 class MockListingsRepository implements ListingsRepository {
+  /// When true, every fetch throws after the simulated delay — used in tests
+  /// to exercise the AsyncValue error/retry branches that the happy-path mock
+  /// can never reach.
+  MockListingsRepository({this.failRequests = false});
+  final bool failRequests;
+
   static const _towns = <Town>[
     Town('Barnegat Light', LbiRegion.northEnd),
     Town('Harvey Cedars', LbiRegion.northEnd),
@@ -460,7 +466,12 @@ class MockListingsRepository implements ListingsRepository {
   }
 
   Future<T> _delayed<T>(T value) =>
-      Future.delayed(const Duration(milliseconds: 350), () => value);
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (failRequests) {
+          throw Exception('Injected network failure (test fault)');
+        }
+        return value;
+      });
 
   @override
   Future<List<Listing>> fetchAll() => _delayed(_catalog);

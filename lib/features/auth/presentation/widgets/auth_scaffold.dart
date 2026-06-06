@@ -73,7 +73,7 @@ class AuthScaffold extends StatelessWidget {
                 // A Material (not a bare DecoratedBox) so ListTile children can
                 // paint their background + ink splashes onto an ancestor.
                 child: Material(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   clipBehavior: Clip.antiAlias,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(28),

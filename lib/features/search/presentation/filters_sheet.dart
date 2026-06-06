@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -10,10 +11,10 @@ import '../application/search_controller.dart';
 /// Presents the advanced-search filter sheet and writes the assembled query
 /// back into [searchQueryProvider] on apply.
 Future<void> showFiltersSheet(BuildContext context, WidgetRef ref) {
-  return showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -239,6 +240,7 @@ class _FiltersSheetState extends ConsumerState<_FiltersSheet> {
           ),
           child: FilledButton(
             onPressed: () {
+              HapticFeedback.selectionClick();
               ref.read(searchQueryProvider.notifier).update(_draft);
               Navigator.of(context).pop();
             },

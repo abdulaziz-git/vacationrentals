@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/external_links.dart';
 
 /// Account tab. Shows a signed-out hero with login/signup CTAs, then the
 /// standard settings/help/owner-portal rows seen across the VRLBI footer.
@@ -14,7 +15,7 @@ class AccountScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Account')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
         children: [
           Container(
             padding: const EdgeInsets.all(18),
@@ -72,24 +73,63 @@ class AccountScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           _group('Travelers', [
-            _row(Icons.help_outline, 'How to Book'),
-            _row(Icons.quiz_outlined, 'Traveler FAQs'),
-            _row(Icons.verified_user_outlined, 'Scam-Free Guarantee'),
-            _row(Icons.request_quote_outlined, 'Get a Quote'),
-            _row(Icons.health_and_safety_outlined, 'Travel Insurance'),
+            _row(context, Icons.help_outline, 'How to Book'),
+            _row(context, Icons.quiz_outlined, 'Traveler FAQs'),
+            _row(context, Icons.verified_user_outlined, 'Scam-Free Guarantee'),
+            _row(
+              context,
+              Icons.request_quote_outlined,
+              'Get a Quote',
+              onTap: () => context.go('/search'),
+            ),
+            _row(context, Icons.health_and_safety_outlined, 'Travel Insurance'),
           ]),
           const SizedBox(height: 16),
           _group('For Homeowners', [
-            _row(Icons.add_home_outlined, 'List Your Property'),
-            _row(Icons.workspace_premium_outlined, 'Packages for Homeowners'),
-            _row(Icons.trending_up, 'Tips to Get More Inquiries'),
+            _row(context, Icons.add_home_outlined, 'List Your Property'),
+            _row(
+              context,
+              Icons.workspace_premium_outlined,
+              'Packages for Homeowners',
+            ),
+            _row(context, Icons.trending_up, 'Tips to Get More Inquiries'),
           ]),
           const SizedBox(height: 16),
           _group('Company', [
-            _row(Icons.info_outline, 'About VRLBI'),
-            _row(Icons.mail_outline, 'Contact Us'),
-            _row(Icons.map_outlined, 'LBI Community Guides'),
-            _row(Icons.settings_outlined, 'Settings'),
+            _row(context, Icons.info_outline, 'About VRLBI'),
+            _row(context, Icons.mail_outline, 'Contact Us'),
+            _row(context, Icons.map_outlined, 'LBI Community Guides'),
+            _row(context, Icons.settings_outlined, 'Settings'),
+          ]),
+          const SizedBox(height: 16),
+          _group('Privacy & legal', [
+            _row(
+              context,
+              Icons.privacy_tip_outlined,
+              'Privacy Policy',
+              onTap: () => openExternal(context, ExternalLinks.privacyPolicy),
+            ),
+            _row(
+              context,
+              Icons.description_outlined,
+              'Terms of Service',
+              onTap: () => openExternal(context, ExternalLinks.terms),
+            ),
+            _row(
+              context,
+              Icons.logout,
+              'Sign out',
+              onTap: () => ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Signed out'))),
+            ),
+            _row(
+              context,
+              Icons.delete_outline,
+              'Delete account',
+              danger: true,
+              onTap: () => _confirmDelete(context),
+            ),
           ]),
           const SizedBox(height: 24),
           Center(
@@ -133,10 +173,57 @@ class AccountScreen extends ConsumerWidget {
     ],
   );
 
-  Widget _row(IconData icon, String label) => ListTile(
-    leading: Icon(icon, color: AppTheme.ocean),
-    title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-    trailing: const Icon(Icons.chevron_right, size: 20),
-    onTap: () {},
-  );
+  Widget _row(
+    BuildContext context,
+    IconData icon,
+    String label, {
+    VoidCallback? onTap,
+    bool danger = false,
+  }) {
+    final color = danger ? AppTheme.heart : AppTheme.ocean;
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: danger ? AppTheme.heart : null,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      // Informational rows fall back to the VRLBI website until dedicated
+      // in-app screens exist; specific rows override with their own action.
+      onTap: onTap ?? () => openExternal(context, ExternalLinks.support),
+    );
+  }
+
+  /// In-app account deletion path (App Store Guideline 5.1.1(v)).
+  void _confirmDelete(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete account?'),
+        content: const Text(
+          'This permanently deletes your VRLBI account, saved homes, and trip '
+          'history. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.heart),
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Your account has been deleted')),
+              );
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
 }

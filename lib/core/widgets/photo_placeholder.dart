@@ -10,6 +10,7 @@ class PhotoPlaceholder extends StatelessWidget {
     required this.height,
     this.width = double.infinity,
     this.imageAsset,
+    this.semanticLabel,
     this.label,
     this.photoCount,
     this.icon = Icons.photo_camera_outlined,
@@ -21,6 +22,9 @@ class PhotoPlaceholder extends StatelessWidget {
 
   /// Optional bundled image asset path; rendered with [BoxFit.cover].
   final String? imageAsset;
+
+  /// VoiceOver description for the image (e.g. the listing title).
+  final String? semanticLabel;
   final String? label;
   final int? photoCount;
   final IconData icon;
@@ -43,6 +47,7 @@ class PhotoPlaceholder extends StatelessWidget {
             Image.asset(
               imageAsset!,
               fit: BoxFit.cover,
+              semanticLabel: semanticLabel,
               errorBuilder: (_, _, _) => colorBlock(),
             )
           else

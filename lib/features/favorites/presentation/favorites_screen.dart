@@ -41,7 +41,7 @@ class FavoritesScreen extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             itemCount: saved.length,
             itemBuilder: (context, i) => ListingCard(listing: saved[i]),
           );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../widgets/async_states.dart';
 import '../../features/account/presentation/account_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
@@ -32,6 +33,9 @@ const _startRoute = String.fromEnvironment(
 final appRouter = GoRouter(
   navigatorKey: _rootKey,
   initialLocation: _startRoute,
+  // Graceful fallback for unknown routes / malformed deep links instead of the
+  // raw red error screen.
+  errorBuilder: (context, state) => _RouteNotFound(uri: state.uri.toString()),
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => ScaffoldWithNav(shell: shell),
@@ -127,3 +131,26 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+/// Friendly fallback shown by [GoRouter.errorBuilder] for unknown routes.
+class _RouteNotFound extends StatelessWidget {
+  const _RouteNotFound({required this.uri});
+  final String uri;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: EmptyState(
+        icon: Icons.explore_off_outlined,
+        title: 'Page not found',
+        message: "We couldn't find “$uri”.",
+        action: FilledButton(
+          onPressed: () => context.go('/home'),
+          style: FilledButton.styleFrom(minimumSize: const Size(200, 48)),
+          child: const Text('Go home'),
+        ),
+      ),
+    );
+  }
+}

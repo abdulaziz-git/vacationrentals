@@ -72,7 +72,7 @@ class PhotoGalleryScreen extends ConsumerWidget {
 
   void _openPager(BuildContext context, List<String> photos, int start) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => _PagerView(photos: photos, start: start),
       ),
     );

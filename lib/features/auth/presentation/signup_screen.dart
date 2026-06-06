@@ -1,7 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/external_links.dart';
 import 'widgets/auth_scaffold.dart';
 
 /// Signup screen. Visual-only for the mockup — submit pops back to the app.
@@ -19,11 +21,18 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscure = true;
   bool _agree = false;
 
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = () => openExternal(context, ExternalLinks.terms);
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = () => openExternal(context, ExternalLinks.privacyPolicy);
+
   @override
   void dispose() {
     _name.dispose();
     _email.dispose();
     _password.dispose();
+    _termsTap.dispose();
+    _privacyTap.dispose();
     super.dispose();
   }
 
@@ -36,6 +45,7 @@ class _SignupScreenState extends State<SignupScreen> {
         TextField(
           controller: _name,
           textCapitalization: TextCapitalization.words,
+          autofillHints: const [AutofillHints.name],
           decoration: const InputDecoration(
             labelText: 'Full name',
             prefixIcon: Icon(Icons.person_outline),
@@ -45,6 +55,8 @@ class _SignupScreenState extends State<SignupScreen> {
         TextField(
           controller: _email,
           keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          autocorrect: false,
           decoration: const InputDecoration(
             labelText: 'Email',
             prefixIcon: Icon(Icons.mail_outline),
@@ -54,6 +66,7 @@ class _SignupScreenState extends State<SignupScreen> {
         TextField(
           controller: _password,
           obscureText: _obscure,
+          autofillHints: const [AutofillHints.newPassword],
           decoration: InputDecoration(
             labelText: 'Password',
             prefixIcon: const Icon(Icons.lock_outline),
@@ -70,8 +83,31 @@ class _SignupScreenState extends State<SignupScreen> {
           controlAffinity: ListTileControlAffinity.leading,
           contentPadding: EdgeInsets.zero,
           activeColor: AppTheme.ocean,
-          title: Text('I agree to the Terms & Privacy Policy',
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 13.5)),
+          title: Text.rich(
+            TextSpan(
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 13.5),
+              children: [
+                const TextSpan(text: 'I agree to the '),
+                TextSpan(
+                  text: 'Terms',
+                  style: const TextStyle(
+                    color: AppTheme.ocean,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  recognizer: _termsTap,
+                ),
+                const TextSpan(text: ' & '),
+                TextSpan(
+                  text: 'Privacy Policy',
+                  style: const TextStyle(
+                    color: AppTheme.ocean,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  recognizer: _privacyTap,
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         FilledButton(
@@ -85,9 +121,13 @@ class _SignupScreenState extends State<SignupScreen> {
             const Text('Already have an account? '),
             GestureDetector(
               onTap: () => context.pushReplacement('/login'),
-              child: const Text('Log in',
-                  style: TextStyle(
-                      color: AppTheme.ocean, fontWeight: FontWeight.w700)),
+              child: const Text(
+                'Log in',
+                style: TextStyle(
+                  color: AppTheme.ocean,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),

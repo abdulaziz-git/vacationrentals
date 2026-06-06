@@ -27,13 +27,16 @@ class EmptyState extends StatelessWidget {
           children: [
             Icon(icon, size: 56, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w700)),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 8),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, height: 1.4)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600, height: 1.4),
+            ),
             if (action != null) ...[const SizedBox(height: 20), action!],
           ],
         ),
@@ -58,20 +61,22 @@ class ErrorStateView extends StatelessWidget {
           children: [
             Icon(Icons.cloud_off, size: 56, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            const Text('Something went wrong',
-                style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const Text(
+              'Something went wrong',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 8),
-            Text(message ?? 'We couldn\'t load this right now.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600)),
+            Text(
+              message ?? 'We couldn\'t load this right now.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: const Text('Try again'),
-              style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(160, 48)),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(160, 48)),
             ),
           ],
         ),
@@ -111,6 +116,21 @@ class _SkeletonBoxState extends State<SkeletonBox>
 
   @override
   Widget build(BuildContext context) {
+    // Honor the OS "Reduce Motion" setting — show a static block instead of a
+    // repeating shimmer.
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (reduceMotion) {
+      if (_c.isAnimating) _c.stop();
+      return Container(
+        height: widget.height,
+        width: widget.width,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(widget.radius),
+        ),
+      );
+    }
+    if (!_c.isAnimating) _c.repeat(reverse: true);
     return AnimatedBuilder(
       animation: _c,
       builder: (context, _) => Container(
@@ -118,7 +138,10 @@ class _SkeletonBoxState extends State<SkeletonBox>
         width: widget.width,
         decoration: BoxDecoration(
           color: Color.lerp(
-              Colors.grey.shade200, Colors.grey.shade300, _c.value),
+            Colors.grey.shade200,
+            Colors.grey.shade300,
+            _c.value,
+          ),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),
@@ -143,8 +166,7 @@ class ListingCardSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const ClipRRect(
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(18)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
             child: SkeletonBox(height: 200, radius: 0),
           ),
           Padding(
@@ -186,18 +208,25 @@ class SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Row(
         children: [
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.deepSea)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepSea,
+            ),
+          ),
           const Spacer(),
           if (actionLabel != null)
             TextButton(
               onPressed: onAction,
-              child: Text(actionLabel!,
-                  style: const TextStyle(
-                      color: AppTheme.ocean, fontWeight: FontWeight.w600)),
+              child: Text(
+                actionLabel!,
+                style: const TextStyle(
+                  color: AppTheme.ocean,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
         ],
       ),

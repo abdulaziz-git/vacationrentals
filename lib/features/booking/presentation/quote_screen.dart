@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -33,17 +34,17 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Request to Book')),
       body: async.when(
-        loading: () =>
-            const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorStateView(
-            onRetry: () =>
-                ref.invalidate(listingByIdProvider(widget.listingId))),
+          onRetry: () => ref.invalidate(listingByIdProvider(widget.listingId)),
+        ),
         data: (listing) {
           if (listing == null) {
             return const EmptyState(
-                icon: Icons.error_outline,
-                title: 'Unavailable',
-                message: 'This listing can no longer be booked.');
+              icon: Icons.error_outline,
+              title: 'Unavailable',
+              message: 'This listing can no longer be booked.',
+            );
           }
           return _form(listing);
         },
@@ -62,9 +63,10 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
             children: [
               _ListingHeader(listing: listing),
               const SizedBox(height: 20),
-              const Text('Your dates',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const Text(
+                'Your dates',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 10),
               Row(
                 children: [
@@ -72,7 +74,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                     child: _DateField(
                       label: 'Check-in',
                       value: _checkIn == null ? null : df.format(_checkIn!),
-                      onTap: () => _pickDate(true),
+                      onTap: _pickRange,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -80,22 +82,26 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                     child: _DateField(
                       label: 'Check-out',
                       value: _checkOut == null ? null : df.format(_checkOut!),
-                      onTap: () => _pickDate(false),
+                      onTap: _pickRange,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              const Text('Guests',
-                  style:
-                      TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const Text(
+                'Guests',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Text('$_guests guest${_guests == 1 ? '' : 's'}',
-                      style: const TextStyle(fontSize: 15)),
+                  Text(
+                    '$_guests guest${_guests == 1 ? '' : 's'}',
+                    style: const TextStyle(fontSize: 15),
+                  ),
                   const Spacer(),
                   IconButton.outlined(
+                    tooltip: 'Remove guest',
                     onPressed: _guests <= 1
                         ? null
                         : () => setState(() => _guests--),
@@ -103,6 +109,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.outlined(
+                    tooltip: 'Add guest',
                     onPressed: _guests >= listing.sleeps
                         ? null
                         : () => setState(() => _guests++),
@@ -110,9 +117,10 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                   ),
                 ],
               ),
-              Text('Max ${listing.sleeps} guests',
-                  style:
-                      TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+              Text(
+                'Max ${listing.sleeps} guests',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+              ),
               const SizedBox(height: 20),
               _InsuranceTile(
                 value: _insurance,
@@ -121,9 +129,10 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
               ),
               const SizedBox(height: 20),
               if (_checkIn != null && _checkOut != null) ...[
-                const Text('Price details',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w800)),
+                const Text(
+                  'Price details',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 10),
                 _PriceBreakdown(booking: preview),
               ] else
@@ -139,8 +148,9 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                            'Select your dates to see the full price breakdown.',
-                            style: TextStyle(color: Colors.grey.shade700)),
+                          'Select your dates to see the full price breakdown.',
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
                       ),
                     ],
                   ),
@@ -175,31 +185,30 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
     );
   }
 
-  Future<void> _pickDate(bool isCheckIn) async {
-    final initial = isCheckIn
-        ? (_checkIn ?? DateTime(2026, 6, 21))
-        : (_checkOut ?? (_checkIn ?? DateTime(2026, 6, 21))
-            .add(const Duration(days: 7)));
-    final picked = await showDatePicker(
+  Future<void> _pickRange() async {
+    final initial = (_checkIn != null && _checkOut != null)
+        ? DateTimeRange(start: _checkIn!, end: _checkOut!)
+        : null;
+    final picked = await showDateRangePicker(
       context: context,
-      initialDate: initial,
       firstDate: DateTime(2026, 6),
       lastDate: DateTime(2026, 12, 31),
+      initialDateRange: initial,
+      helpText: 'Select your stay',
+      saveText: 'Done',
     );
     if (picked == null) return;
     setState(() {
-      if (isCheckIn) {
-        _checkIn = picked;
-        if (_checkOut != null && !_checkOut!.isAfter(picked)) {
-          _checkOut = picked.add(const Duration(days: 7));
-        }
-      } else {
-        _checkOut = picked;
-      }
+      _checkIn = picked.start;
+      // Guarantee at least a one-night stay if the same day is picked twice.
+      _checkOut = picked.end.isAfter(picked.start)
+          ? picked.end
+          : picked.start.add(const Duration(days: 1));
     });
   }
 
   void _submit(Listing listing) {
+    HapticFeedback.mediumImpact();
     final booking = ref.read(bookingsProvider.notifier).add(_booking(listing));
     context.pushReplacement('/booking/${booking.id}/confirmed');
   }
@@ -219,8 +228,10 @@ class _ListingHeader extends StatelessWidget {
             width: 64,
             height: 64,
             color: Color(listing.heroColor),
-            child: const Icon(Icons.photo_camera_outlined,
-                color: Colors.white54),
+            child: const Icon(
+              Icons.photo_camera_outlined,
+              color: Colors.white54,
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -228,14 +239,19 @@ class _ListingHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(listing.title.replaceAll('**', ''),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700, fontSize: 15)),
-              Text(listing.town.path,
-                  style: const TextStyle(
-                      color: AppTheme.ocean, fontSize: 13)),
+              Text(
+                listing.title.replaceAll('**', ''),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+              Text(
+                listing.town.path,
+                style: const TextStyle(color: AppTheme.ocean, fontSize: 13),
+              ),
             ],
           ),
         ),
@@ -245,8 +261,11 @@ class _ListingHeader extends StatelessWidget {
 }
 
 class _DateField extends StatelessWidget {
-  const _DateField(
-      {required this.label, required this.value, required this.onTap});
+  const _DateField({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
   final String label;
   final String? value;
   final VoidCallback onTap;
@@ -266,19 +285,23 @@ class _DateField extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(value ?? 'Select',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: value == null
-                        ? Colors.grey.shade400
-                        : AppTheme.deepSea)),
+            Text(
+              value ?? 'Select',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: value == null ? Colors.grey.shade400 : AppTheme.deepSea,
+              ),
+            ),
           ],
         ),
       ),
@@ -287,30 +310,41 @@ class _DateField extends StatelessWidget {
 }
 
 class _InsuranceTile extends StatelessWidget {
-  const _InsuranceTile(
-      {required this.value, required this.cost, required this.onChanged});
+  const _InsuranceTile({
+    required this.value,
+    required this.cost,
+    required this.onChanged,
+  });
   final bool value;
   final int cost;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.seafoam.withValues(alpha: 0.08),
+    return Material(
+      // Material (not a bare Container) so the SwitchListTile paints its
+      // background + ink onto a real surface instead of an invisible box.
+      color: AppTheme.seafoam.withValues(alpha: 0.08),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.seafoam.withValues(alpha: 0.3)),
+        side: BorderSide(color: AppTheme.seafoam.withValues(alpha: 0.3)),
       ),
       child: SwitchListTile(
         value: value,
         activeThumbColor: AppTheme.seafoam,
         onChanged: onChanged,
-        title: const Text('Add Travel Insurance',
-            style: TextStyle(fontWeight: FontWeight.w700)),
+        title: const Text(
+          'Add Travel Insurance',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
         subtitle: Text(
-            "'Cancel for any reason' coverage · ${Format.money(cost)} (7%)"),
-        secondary: const Icon(Icons.health_and_safety_outlined,
-            color: AppTheme.seafoam),
+          "'Cancel for any reason' coverage · ${Format.money(cost)} (7%)",
+        ),
+        secondary: const Icon(
+          Icons.health_and_safety_outlined,
+          color: AppTheme.seafoam,
+        ),
       ),
     );
   }
@@ -323,21 +357,27 @@ class _PriceBreakdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget row(String label, int amount, {bool bold = false}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
-            children: [
-              Text(label,
-                  style: TextStyle(
-                      fontSize: bold ? 16 : 14,
-                      fontWeight: bold ? FontWeight.w800 : FontWeight.w500)),
-              const Spacer(),
-              Text(Format.money(amount),
-                  style: TextStyle(
-                      fontSize: bold ? 16 : 14,
-                      fontWeight: bold ? FontWeight.w800 : FontWeight.w600)),
-            ],
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: bold ? 16 : 14,
+              fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
+            ),
           ),
-        );
+          const Spacer(),
+          Text(
+            Format.money(amount),
+            style: TextStyle(
+              fontSize: bold ? 16 : 14,
+              fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -347,8 +387,10 @@ class _PriceBreakdown extends StatelessWidget {
       ),
       child: Column(
         children: [
-          row('${Format.money(booking.weeklyRate)} × ${booking.nights} nights',
-              booking.rentalCost),
+          row(
+            '${Format.money(booking.weeklyRate)} × ${booking.nights} nights',
+            booking.rentalCost,
+          ),
           row('Cleaning fee', booking.cleaningFee),
           if (booking.travelInsurance)
             row('Travel insurance', booking.insuranceCost),
@@ -364,14 +406,19 @@ class _PriceBreakdown extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.savings_outlined,
-                    size: 18, color: AppTheme.ocean),
+                const Icon(
+                  Icons.savings_outlined,
+                  size: 18,
+                  color: AppTheme.ocean,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '50% deposit due now: ${Format.money(booking.depositDue)}',
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 13),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -384,8 +431,11 @@ class _PriceBreakdown extends StatelessWidget {
 }
 
 class _SubmitBar extends StatelessWidget {
-  const _SubmitBar(
-      {required this.enabled, required this.total, required this.onSubmit});
+  const _SubmitBar({
+    required this.enabled,
+    required this.total,
+    required this.onSubmit,
+  });
   final bool enabled;
   final int total;
   final VoidCallback onSubmit;
@@ -394,7 +444,11 @@ class _SubmitBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
+        16,
+        12,
+        16,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
@@ -406,9 +460,13 @@ class _SubmitBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(Format.money(total),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 18)),
+                Text(
+                  Format.money(total),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
                 const Text('total', style: TextStyle(color: Colors.black54)),
               ],
             ),

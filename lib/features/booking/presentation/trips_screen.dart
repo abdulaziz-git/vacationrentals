@@ -29,7 +29,7 @@ class TripsScreen extends ConsumerWidget {
               ),
             )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
                 _GroupLabel('Upcoming'),
                 ...bookings
@@ -54,11 +54,14 @@ class _GroupLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 12),
-      child: Text(text,
-          style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.deepSea)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: AppTheme.deepSea,
+        ),
+      ),
     );
   }
 }
@@ -88,24 +91,32 @@ class _TripCard extends StatelessWidget {
                   height: 120,
                   width: double.infinity,
                   color: Color(booking.heroColor),
-                  child: const Icon(Icons.photo_camera_outlined,
-                      color: Colors.white38, size: 36),
+                  child: const Icon(
+                    Icons.photo_camera_outlined,
+                    color: Colors.white38,
+                    size: 36,
+                  ),
                 ),
                 Positioned(
                   top: 12,
                   left: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(booking.status.label,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12)),
+                    child: Text(
+                      booking.status.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -115,45 +126,67 @@ class _TripCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(booking.listingTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 16)),
+                  Text(
+                    booking.listingTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.place_outlined,
-                          size: 15, color: AppTheme.ocean),
+                      const Icon(
+                        Icons.place_outlined,
+                        size: 15,
+                        color: AppTheme.ocean,
+                      ),
                       const SizedBox(width: 4),
-                      Text(booking.town,
-                          style: const TextStyle(
-                              color: AppTheme.ocean,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13)),
+                      Text(
+                        booking.town,
+                        style: const TextStyle(
+                          color: AppTheme.ocean,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_outlined,
-                          size: 16, color: Colors.black54),
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 16,
+                        color: Colors.black54,
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                          '${df.format(booking.checkIn)} – '
-                          '${df.format(booking.checkOut)} · '
-                          '${booking.guests} guests',
-                          style: const TextStyle(fontSize: 13.5)),
+                        '${df.format(booking.checkIn)} – '
+                        '${df.format(booking.checkOut)} · '
+                        '${booking.guests} guests',
+                        style: const TextStyle(fontSize: 13.5),
+                      ),
                       const Spacer(),
-                      Text(Format.money(booking.total),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w800, fontSize: 15)),
+                      Text(
+                        Format.money(booking.total),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
-                  Text(booking.status.detail,
-                      style: TextStyle(
-                          color: Colors.grey.shade600, fontSize: 12.5)),
+                  Text(
+                    booking.status.detail,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 12.5,
+                    ),
+                  ),
                 ],
               ),
             ),

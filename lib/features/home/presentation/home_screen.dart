@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,50 +20,64 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final featured = ref.watch(featuredListingsProvider);
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () async => ref.refresh(featuredListingsProvider.future),
-          child: CustomScrollView(
-            slivers: [
-              const SliverToBoxAdapter(child: _Hero()),
-              const SliverToBoxAdapter(child: _Collections()),
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: 'Featured LBI Rentals',
-                  actionLabel: 'See all',
-                  onAction: () => context.go('/search'),
-                ),
+      // No top SafeArea: the hero gradient bleeds to the very top (behind the
+      // status bar); the hero pads its own content by the status-bar inset.
+      body: RefreshIndicator(
+        onRefresh: () async => ref.refresh(featuredListingsProvider.future),
+        child: CustomScrollView(
+          slivers: [
+            const SliverToBoxAdapter(child: _Hero()),
+            const SliverToBoxAdapter(child: _Collections()),
+            SliverToBoxAdapter(
+              child: SectionHeader(
+                title: 'Featured LBI Rentals',
+                actionLabel: 'See all',
+                onAction: () => context.go('/search'),
               ),
-              featured.when(
-                loading: () => const SliverToBoxAdapter(
-                    child: _FeaturedSkeleton()),
-                error: (e, _) => SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 260,
-                    child: ErrorStateView(
-                      onRetry: () =>
-                          ref.invalidate(featuredListingsProvider),
-                    ),
+            ),
+            featured.when(
+              loading: () =>
+                  const SliverToBoxAdapter(child: _FeaturedSkeleton()),
+              error: (e, _) => SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 260,
+                  child: ErrorStateView(
+                    onRetry: () => ref.invalidate(featuredListingsProvider),
                   ),
                 ),
-                data: (items) => SliverToBoxAdapter(
-                  child: items.isEmpty
-                      ? const SizedBox(
-                          height: 200,
-                          child: EmptyState(
-                            icon: Icons.house_outlined,
-                            title: 'No featured rentals',
-                            message: 'Check back soon for new listings.',
-                          ),
-                        )
-                      : _FeaturedCarousel(items: items),
-                ),
               ),
-              const SliverToBoxAdapter(child: _BrowseByRegion()),
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            ],
-          ),
+              data: (items) => items.isEmpty
+                  ? const SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 200,
+                        child: EmptyState(
+                          icon: Icons.house_outlined,
+                          title: 'No featured rentals',
+                          message: 'Check back soon for new listings.',
+                        ),
+                      ),
+                    )
+                  : SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 20,
+                              crossAxisSpacing: 14,
+                              childAspectRatio: 0.62,
+                            ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) => ListingGridCard(listing: items[i]),
+                          childCount: items.length,
+                        ),
+                      ),
+                    ),
+            ),
+            const SliverToBoxAdapter(child: _BrowseByRegion()),
+            // Clear the floating bottom nav (extendBody: true).
+            const SliverToBoxAdapter(child: SizedBox(height: 96)),
+          ],
         ),
       ),
     );
@@ -74,61 +89,108 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppTheme.ocean, Color(0xFF0A567A)],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Light status-bar glyphs over the solid-blue hero.
+      value: SystemUiOverlayStyle.light,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          MediaQuery.of(context).padding.top + 12,
+          20,
+          24,
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text('VRLBI',
+        decoration: const BoxDecoration(
+          color: AppTheme.ocean,
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  'VRLBI',
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5)),
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-                child: const Text('Book Direct · No Fees',
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Book Direct · No Fees',
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Notifications',
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No new notifications')),
+                  ),
+                  icon: const Icon(
+                    Icons.notifications_none,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.place, size: 16, color: AppTheme.sun),
+                const SizedBox(width: 5),
+                Text(
+                  'Long Beach Island, NJ',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Text.rich(
+              TextSpan(
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                ),
+                children: [
+                  TextSpan(text: 'Find your Long Beach\nIsland '),
+                  TextSpan(
+                    text: 'getaway',
+                    style: TextStyle(color: AppTheme.sun),
+                  ),
+                ],
               ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.notifications_none,
-                    color: Colors.white),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Find your Long Beach\nIsland getaway',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                height: 1.15,
-                fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 18),
-          _SearchPrompt(),
-        ],
+            ),
+            const SizedBox(height: 18),
+            _SearchPrompt(),
+          ],
+        ),
       ),
     );
   }
@@ -153,22 +215,30 @@ class _SearchPrompt extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Where on LBI?',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.deepSea)),
-                    Text('Any dates · Add guests',
-                        style: TextStyle(
-                            color: Colors.grey.shade600, fontSize: 12.5)),
+                    Text(
+                      'Where on LBI?',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepSea,
+                      ),
+                    ),
+                    Text(
+                      'Any dates · Add guests',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12.5,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(
-                    color: AppTheme.sunset, shape: BoxShape.circle),
-                child: const Icon(Icons.tune,
-                    color: Colors.white, size: 18),
+                  color: AppTheme.ocean,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.tune, color: Colors.white, size: 18),
               ),
             ],
           ),
@@ -204,11 +274,9 @@ class _Collections extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             onTap: () {
               final q = ref.read(searchQueryProvider);
-              ref.read(searchQueryProvider.notifier).update(
-                    loc == null
-                        ? q
-                        : q.copyWith(locationTypes: {loc}),
-                  );
+              ref
+                  .read(searchQueryProvider.notifier)
+                  .update(loc == null ? q : q.copyWith(locationTypes: {loc}));
               context.go('/search');
             },
             child: Column(
@@ -223,32 +291,17 @@ class _Collections extends ConsumerWidget {
                   child: Icon(icon, color: AppTheme.ocean),
                 ),
                 const SizedBox(height: 6),
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _FeaturedCarousel extends StatelessWidget {
-  const _FeaturedCarousel({required this.items});
-  final List<Listing> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 290,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        itemCount: items.length,
-        itemBuilder: (context, i) =>
-            ListingCardCompact(listing: items[i]),
       ),
     );
   }
@@ -277,8 +330,7 @@ class _FeaturedSkeleton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               ClipRRect(
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(18)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
                 child: SkeletonBox(height: 150, radius: 0),
               ),
               Padding(
@@ -319,8 +371,10 @@ class _BrowseByRegion extends ConsumerWidget {
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   leading: Container(
                     width: 46,
                     height: 46,
@@ -328,15 +382,21 @@ class _BrowseByRegion extends ConsumerWidget {
                       color: AppTheme.seafoam.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child:
-                        const Icon(Icons.map_outlined, color: AppTheme.seafoam),
+                    child: const Icon(
+                      Icons.map_outlined,
+                      color: AppTheme.seafoam,
+                    ),
                   ),
-                  title: Text(r.label,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  title: Text(
+                    r.label,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                   subtitle: const Text('Tap to explore rentals'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    ref.read(searchQueryProvider.notifier).update(
+                    ref
+                        .read(searchQueryProvider.notifier)
+                        .update(
                           ref.read(searchQueryProvider).copyWith(region: r),
                         );
                     context.go('/search');

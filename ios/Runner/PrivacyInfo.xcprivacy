@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The app does not use data to track users (no ATT). -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<!-- No tracking domains. -->
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<!-- No data is collected by this build (mock data, no backend/analytics). -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<!-- Required-reason API declarations. Add entries here as SDKs/APIs that
+	     access these categories are introduced (e.g. UserDefaults "CA92.1"). -->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../widgets/async_states.dart';
 import '../../features/account/presentation/account_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
@@ -24,11 +25,17 @@ final _shellKey = GlobalKey<NavigatorState>();
 /// Initial location. Honors a `START_ROUTE` define (used to deep-link into a
 /// single screen during simulator verification, e.g.
 /// `--dart-define=START_ROUTE=/search`); defaults to `/home`.
-const _startRoute = String.fromEnvironment('START_ROUTE', defaultValue: '/home');
+const _startRoute = String.fromEnvironment(
+  'START_ROUTE',
+  defaultValue: '/home',
+);
 
 final appRouter = GoRouter(
   navigatorKey: _rootKey,
   initialLocation: _startRoute,
+  // Graceful fallback for unknown routes / malformed deep links instead of the
+  // raw red error screen.
+  errorBuilder: (context, state) => _RouteNotFound(uri: state.uri.toString()),
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => ScaffoldWithNav(shell: shell),
@@ -42,30 +49,38 @@ final appRouter = GoRouter(
             ),
           ],
         ),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/search',
-            builder: (context, state) => const SearchScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/saved',
-            builder: (context, state) => const FavoritesScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/trips',
-            builder: (context, state) => const TripsScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: '/account',
-            builder: (context, state) => const AccountScreen(),
-          ),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/search',
+              builder: (context, state) => const SearchScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/saved',
+              builder: (context, state) => const FavoritesScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/trips',
+              builder: (context, state) => const TripsScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/account',
+              builder: (context, state) => const AccountScreen(),
+            ),
+          ],
+        ),
       ],
     ),
     GoRoute(
@@ -116,3 +131,26 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+/// Friendly fallback shown by [GoRouter.errorBuilder] for unknown routes.
+class _RouteNotFound extends StatelessWidget {
+  const _RouteNotFound({required this.uri});
+  final String uri;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: EmptyState(
+        icon: Icons.explore_off_outlined,
+        title: 'Page not found',
+        message: "We couldn't find “$uri”.",
+        action: FilledButton(
+          onPressed: () => context.go('/home'),
+          style: FilledButton.styleFrom(minimumSize: const Size(200, 48)),
+          child: const Text('Go home'),
+        ),
+      ),
+    );
+  }
+}

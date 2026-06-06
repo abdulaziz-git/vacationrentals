@@ -26,7 +26,8 @@ class BookingConfirmationScreen extends ConsumerWidget {
             ? const EmptyState(
                 icon: Icons.error_outline,
                 title: 'Booking not found',
-                message: 'We could not locate this request.')
+                message: 'We could not locate this request.',
+              )
             : _Body(booking: booking),
       ),
     );
@@ -55,15 +56,19 @@ class _Body extends StatelessWidget {
                     color: AppTheme.seafoam.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check_circle,
-                      color: AppTheme.seafoam, size: 56),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: AppTheme.seafoam,
+                    size: 56,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Request sent!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 26, fontWeight: FontWeight.w800)),
+              const Text(
+                'Request sent!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 8),
               Text(
                 'Your booking request for ${booking.town} has been sent to the '
@@ -85,21 +90,30 @@ class _Body extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text('Request ${booking.id}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800, fontSize: 16)),
+                        Text(
+                          'Request ${booking.id}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
                         const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFE2B8),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text(booking.status.label,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12)),
+                          child: Text(
+                            booking.status.label,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -118,7 +132,11 @@ class _Body extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.fromLTRB(
-              20, 0, 20, 16 + MediaQuery.of(context).padding.bottom),
+            20,
+            0,
+            20,
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
           child: Column(
             children: [
               FilledButton(
@@ -138,21 +156,23 @@ class _Body extends StatelessWidget {
   }
 
   Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-                width: 120,
-                child: Text(label,
-                    style: TextStyle(color: Colors.grey.shade600))),
-            Expanded(
-              child: Text(value,
-                  style: const TextStyle(fontWeight: FontWeight.w600)),
-            ),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(label, style: TextStyle(color: Colors.grey.shade600)),
         ),
-      );
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 extension _FirstOrNull<E> on Iterable<E> {

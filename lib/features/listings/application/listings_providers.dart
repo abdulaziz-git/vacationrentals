@@ -20,18 +20,20 @@ final allListingsProvider = FutureProvider<List<Listing>>(
   (ref) => ref.watch(listingsRepositoryProvider).fetchAll(),
 );
 
-/// A single listing by id, for the detail screen.
-final listingByIdProvider = FutureProvider.family<Listing?, String>(
+/// A single listing by id, for the detail screen. autoDispose so per-id state
+/// is released when the screen is popped and re-fetched on next visit (matters
+/// once REST data can change between visits).
+final listingByIdProvider = FutureProvider.autoDispose.family<Listing?, String>(
   (ref, id) => ref.watch(listingsRepositoryProvider).byId(id),
 );
 
 /// Other rentals from the same owner (detail screen "nearby / more from host").
-final ownerListingsProvider =
-    FutureProvider.family<List<Listing>, ({String owner, String excludeId})>(
-  (ref, arg) => ref
-      .watch(listingsRepositoryProvider)
-      .byOwner(arg.owner, excludeId: arg.excludeId),
-);
+final ownerListingsProvider = FutureProvider.autoDispose
+    .family<List<Listing>, ({String owner, String excludeId})>(
+      (ref, arg) => ref
+          .watch(listingsRepositoryProvider)
+          .byOwner(arg.owner, excludeId: arg.excludeId),
+    );
 
 /// The static list of towns for filter UIs.
 final townsProvider = Provider<List<Town>>(

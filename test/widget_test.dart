@@ -1,6 +1,5 @@
 // Smoke test: the app boots into the home screen with the VRLBI brand mark.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -14,6 +13,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('VRLBI'), findsWidgets);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    // The floating bottom-nav renders the active tab's label ("Home" on boot).
+    expect(find.text('Home'), findsOneWidget);
   });
 }

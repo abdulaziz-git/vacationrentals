@@ -146,6 +146,7 @@ class Listing {
     this.weeklyTo,
     required this.heroColor,
     required this.photoCount,
+    this.photos = const [],
     required this.description,
     required this.bedConfig,
     required this.amenities,
@@ -176,9 +177,13 @@ class Listing {
   final int weeklyFrom;
   final int? weeklyTo;
 
-  /// Seed color used to render the placeholder photo in the mock build.
+  /// Seed color used as a fallback when a real photo is missing.
   final int heroColor;
   final int photoCount;
+
+  /// Real photo asset paths (e.g. `assets/listing_photos/photo_001.jpg`).
+  /// Empty falls back to the [heroColor] block.
+  final List<String> photos;
   final String description;
   final List<BedConfig> bedConfig;
   final List<Amenity> amenities;
@@ -194,6 +199,41 @@ class Listing {
   final bool wheelchairAccessible;
   final List<String> badges;
   final int viewCount;
+
+  /// Returns a copy with real [photos] assigned; [photoCount] is synced to
+  /// the number of photos so the UI's "N photos" label stays accurate.
+  Listing withPhotos(List<String> photos) => Listing(
+    id: id,
+    title: title,
+    town: town,
+    propertyType: propertyType,
+    locationType: locationType,
+    bedrooms: bedrooms,
+    fullBaths: fullBaths,
+    halfBaths: halfBaths,
+    sleeps: sleeps,
+    sqft: sqft,
+    weeklyFrom: weeklyFrom,
+    weeklyTo: weeklyTo,
+    heroColor: heroColor,
+    photoCount: photos.length,
+    photos: photos,
+    description: description,
+    bedConfig: bedConfig,
+    amenities: amenities,
+    rates: rates,
+    availability: availability,
+    reviews: reviews,
+    owner: owner,
+    rating: rating,
+    parking: parking,
+    keylessEntry: keylessEntry,
+    petsWelcome: petsWelcome,
+    smokingAllowed: smokingAllowed,
+    wheelchairAccessible: wheelchairAccessible,
+    badges: badges,
+    viewCount: viewCount,
+  );
 
   double get reviewAverage {
     if (reviews.isEmpty) return rating;

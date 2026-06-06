@@ -20,14 +20,11 @@ class AuthScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppTheme.ocean, Color(0xFF0A567A)],
-          ),
-        ),
+        decoration: const BoxDecoration(color: AppTheme.ocean),
         child: SafeArea(
+          // bottom:false → the white sheet runs to the very bottom edge (no
+          // blue band under the home indicator); its scroll pads for the inset.
+          bottom: false,
           child: Column(
             children: [
               Align(
@@ -42,37 +39,52 @@ class AuthScaffold extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('VRLBI',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5)),
+                    const Text(
+                      'VRLBI',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                     const SizedBox(height: 12),
-                    Text(title,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    Text(subtitle,
-                        style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 14,
-                            height: 1.4)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFBFAF7),
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(28)),
+                // A Material (not a bare DecoratedBox) so ListTile children can
+                // paint their background + ink splashes onto an ancestor.
+                child: Material(
+                  color: Theme.of(context).colorScheme.surface,
+                  clipBehavior: Clip.antiAlias,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
                   ),
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      28,
+                      24,
+                      24 + MediaQuery.of(context).padding.bottom,
+                    ),
                     children: children,
                   ),
                 ),

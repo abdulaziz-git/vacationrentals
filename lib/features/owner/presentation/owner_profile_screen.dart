@@ -15,15 +15,18 @@ class OwnerProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final name = Uri.decodeComponent(ownerName);
-    final listings =
-        ref.watch(ownerListingsProvider((owner: name, excludeId: '')));
+    final listings = ref.watch(
+      ownerListingsProvider((owner: name, excludeId: '')),
+    );
     return Scaffold(
       appBar: AppBar(title: const Text('Owner profile')),
       body: listings.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorStateView(
-            onRetry: () => ref.invalidate(
-                ownerListingsProvider((owner: name, excludeId: '')))),
+          onRetry: () => ref.invalidate(
+            ownerListingsProvider((owner: name, excludeId: '')),
+          ),
+        ),
         data: (items) {
           final sample = items.isNotEmpty ? items.first.owner : null;
           return ListView(
@@ -34,11 +37,14 @@ class OwnerProfileScreen extends ConsumerWidget {
                   CircleAvatar(
                     radius: 34,
                     backgroundColor: AppTheme.ocean,
-                    child: Text(name[0],
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700)),
+                    child: Text(
+                      name[0],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -48,24 +54,38 @@ class OwnerProfileScreen extends ConsumerWidget {
                         Row(
                           children: [
                             Flexible(
-                              child: Text(name,
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w800)),
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 6),
-                            const Icon(Icons.verified,
-                                color: AppTheme.ocean, size: 20),
+                            const Icon(
+                              Icons.verified,
+                              color: AppTheme.ocean,
+                              size: 20,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text('Verified owner / manager',
-                            style: TextStyle(
-                                color: Colors.grey.shade600, fontSize: 13)),
+                        Text(
+                          'Verified owner / manager',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 13,
+                          ),
+                        ),
                         if (sample != null)
-                          Text('Responds ${sample.responseTime}',
-                              style: TextStyle(
-                                  color: Colors.grey.shade600, fontSize: 13)),
+                          Text(
+                            'Responds ${sample.responseTime}',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -92,9 +112,13 @@ class OwnerProfileScreen extends ConsumerWidget {
                 ],
               ),
               const Divider(height: 36),
-              Text('${items.length} rentals from $name',
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(
+                '${items.length} rentals from $name',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const SizedBox(height: 12),
               if (items.isEmpty)
                 const EmptyState(

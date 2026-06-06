@@ -63,3 +63,34 @@ StatefulShellRoute bottom-nav tabs: `/home`, `/search`, `/saved`, `/trips`,
 `/owner/:name`, `/login`, `/signup`.
 Verification hook: `--dart-define=START_ROUTE=/<path>` deep-links the app to a
 single screen on boot (used for simulator screenshots); defaults to `/home`.
+
+## 7. UI / Design System Ledger
+Brand palette = live VRLBI site: `AppTheme.ocean` brand blue `#0081ff`,
+`AppTheme.deepSea` navy `#073855` (text/headings + "Maps" pill),
+`AppTheme.sun`/`sunset` yellow `#FFDC00`/`#FFC400` (stars, accents),
+`AppTheme.heart` `#F5463B` (favorites), `seafoam` sky-blue, `tint` pale-blue
+chips, `canvas` `#F4F7FB` background. **Flat solid fills only — no gradients.**
+Component themes: pill (StadiumBorder) filled/outlined buttons, 24px rounded
+cards, 18px rounded inputs, stadium chips with explicit dark labels
+(`labelStyle`/`secondaryLabelStyle` set so chip text is never invisible).
+
+Shared catalog widgets (`core/widgets/listing_card.dart`):
+* `ListingCard` (wide), `ListingCardCompact` (carousel) — original.
+* `ListingListRow` — search/Lists row: rounded thumbnail + overlaid rating
+  pill + Verified badge + weekly price.
+* `ListingGridCard` — 2-col grid card (home featured / saved): photo + fav
+  toggle + title + blurb + price.
+`PhotoPlaceholder` takes an optional `width` (solid per-listing tint block).
+
+Layout patterns (reference-driven):
+* Bottom nav (`scaffold_with_nav.dart`): floating rounded white bar, active
+  tab expands into a brand-blue pill with label; `extendBody: true`.
+* Home: solid-blue hero bleeds under the status bar (no top SafeArea; hero
+  pads by `MediaQuery.padding.top`), location pill, 2-col featured grid.
+* Search: quick-filter chip row (All resets · Type/Region/Price open sheet).
+* Detail: owner row + dark "Maps" pill, see-more description, `_Accordion`
+  (ExpansionTile) sections, sticky "Book Now" bar with chat circle button.
+* Filter sheet: selectable property-type cards (`_RoomCard`) + chips.
+* Auth: `AuthScaffold` solid-blue header + white sheet running to the bottom
+  edge (`SafeArea(bottom:false)`, scroll padded by bottom inset). Sheet is a
+  `Material` so `ListTile`/`SwitchListTile` children render ink correctly.

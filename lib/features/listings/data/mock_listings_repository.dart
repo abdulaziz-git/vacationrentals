@@ -5,6 +5,12 @@ import '../domain/listings_repository.dart';
 /// the "Bayside Beauty" detail page, amenity taxonomy). Returns Dart objects
 /// directly — no JSON yet. Replace with a REST-backed implementation later.
 class MockListingsRepository implements ListingsRepository {
+  /// When true, every fetch throws after the simulated delay — used in tests
+  /// to exercise the AsyncValue error/retry branches that the happy-path mock
+  /// can never reach.
+  MockListingsRepository({this.failRequests = false});
+  final bool failRequests;
+
   static const _towns = <Town>[
     Town('Barnegat Light', LbiRegion.northEnd),
     Town('Harvey Cedars', LbiRegion.northEnd),
@@ -143,64 +149,236 @@ class MockListingsRepository implements ListingsRepository {
     ),
   );
 
+  // ---- Real photo pool (assets bundled from the VRLBI scrape) --------------
+  /// Number of `assets/listing_photos/photo_NNN.jpg` files (see pubspec).
+  static const _photoPoolSize = 180;
+
+  static String _photoAsset(int i) =>
+      'assets/listing_photos/photo_${(i % _photoPoolSize).toString().padLeft(3, '0')}.jpg';
+
+  /// Assigns each listing a contiguous slice of the photo pool (6–14 each),
+  /// advancing a shared cursor so hero photos stay distinct across listings.
+  List<Listing> _withPhotos(List<Listing> items) {
+    var cursor = 0;
+    return [
+      for (final l in items)
+        () {
+          final count = l.photoCount.clamp(6, 14);
+          final photos = [
+            for (var i = 0; i < count; i++) _photoAsset(cursor + i),
+          ];
+          cursor += count;
+          return l.withPhotos(photos);
+        }(),
+    ];
+  }
+
   // ---- A spread of catalog listings (from the search results scrape) -------
-  late final List<Listing> _catalog = [
+  late final List<Listing> _catalog = _withPhotos([
     _baysideBeauty,
-    _make('1', 'Oceanblock Oasis — Pool, 4 Houses to the Beach', 'Haven Beach',
-        PropertyType.house, LocationType.oceanBlock,
-        bedrooms: 5, full: 5, half: 0, sleeps: 10, from: 15000, to: 17000,
-        color: 0xFF2E86AB, badges: ['Pool', 'Ocean Block'], rating: 4.9,
-        reviews: 12),
-    _make('2', 'Newly Built Oceanside — 5BR, Pool', 'Brant Beach',
-        PropertyType.house, LocationType.oceanBlock,
-        bedrooms: 5, full: 3, half: 2, sleeps: 16, from: 4500, to: 14000,
-        color: 0xFF06A77D, badges: ['Pool', 'New Build'], rating: 4.8,
-        reviews: 9),
-    _make('3', 'Heated Saltwater Pool — Perfect for Family Shares',
-        'Ship Bottom', PropertyType.house, LocationType.oceanBlock,
-        bedrooms: 4, full: 3, half: 1, sleeps: 10, from: 6000, to: 8950,
-        color: 0xFFF4A259, badges: ['Heated Pool'], rating: 4.7, reviews: 21),
-    _make('4', 'Bayfront Bliss — Sunset Dock', 'Brant Beach',
-        PropertyType.house, LocationType.bayfront,
-        bedrooms: 4, full: 2, half: 1, sleeps: 10, from: 12000,
-        color: 0xFF8E7DBE, badges: ['Bayfront', 'Dock'], rating: 5.0,
-        reviews: 6),
-    _make('5', 'Pet-Friendly Townhouse — \$300 Off Select Weeks',
-        'Beach Haven', PropertyType.townhouse, LocationType.midIsland,
-        bedrooms: 3, full: 2, half: 1, sleeps: 8, from: 1500, to: 5800,
-        color: 0xFFE8743B, badges: ['Pet Friendly', 'Special Offer'],
-        rating: 4.4, reviews: 18),
-    _make('6', 'Panoramic Views — Pool, Elevator & Pet Friendly',
-        'Surf City', PropertyType.house, LocationType.oceanfront,
-        bedrooms: 4, full: 3, half: 0, sleeps: 10, from: 4900, to: 5900,
-        color: 0xFF2E86AB, badges: ['Pool', 'Elevator', 'Pet Friendly'],
-        rating: 4.6, reviews: 14),
-    _make('7', 'Newly Updated Beach Block', 'Barnegat Light',
-        PropertyType.house, LocationType.oceanBlock,
-        bedrooms: 6, full: 4, half: 0, sleeps: 15, from: 4500, to: 11000,
-        color: 0xFF06A77D, badges: ['Beach Block'], rating: 4.9, reviews: 11),
-    _make('8', 'Luxury Oceanfront Retreat — Rooftop Pool', 'Surf City',
-        PropertyType.house, LocationType.oceanfront,
-        bedrooms: 6, full: 5, half: 1, sleeps: 12, from: 45000, to: 55000,
-        color: 0xFF222E50, badges: ['Oceanfront', 'Rooftop Pool', 'Luxury'],
-        rating: 5.0, reviews: 8),
-    _make('9', 'Cozy & Spacious — Bikes, Toys, Game Room', 'Brant Beach',
-        PropertyType.house, LocationType.bayside,
-        bedrooms: 4, full: 2, half: 1, sleeps: 10, from: 4750, to: 6250,
-        color: 0xFFF4A259, badges: ['Game Room'], rating: 4.5, reviews: 23),
-    _make('10', 'Bay Breeze Escape', 'North Beach', PropertyType.house,
-        LocationType.bayside,
-        bedrooms: 4, full: 2, half: 0, sleeps: 9, from: 6000, to: 8500,
-        color: 0xFF8E7DBE, badges: ['Bayside'], rating: 4.7, reviews: 10),
-    _make('11', 'Charming Cottage Near the Bay', 'Beach Haven Park',
-        PropertyType.cottage, LocationType.midIsland,
-        bedrooms: 2, full: 1, half: 0, sleeps: 5, from: 1975,
-        color: 0xFF06A77D, badges: ['Cottage'], rating: 4.3, reviews: 7),
-    _make('12', 'Bright Bay Duplex — Walk to Everything', 'Holgate',
-        PropertyType.duplex, LocationType.bayside,
-        bedrooms: 3, full: 2, half: 0, sleeps: 8, from: 1200, to: 3950,
-        color: 0xFFE8743B, badges: ['Duplex'], rating: 4.2, reviews: 15),
-  ];
+    _make(
+      '1',
+      'Oceanblock Oasis — Pool, 4 Houses to the Beach',
+      'Haven Beach',
+      PropertyType.house,
+      LocationType.oceanBlock,
+      bedrooms: 5,
+      full: 5,
+      half: 0,
+      sleeps: 10,
+      from: 15000,
+      to: 17000,
+      color: 0xFF2E86AB,
+      badges: ['Pool', 'Ocean Block'],
+      rating: 4.9,
+      reviews: 12,
+    ),
+    _make(
+      '2',
+      'Newly Built Oceanside — 5BR, Pool',
+      'Brant Beach',
+      PropertyType.house,
+      LocationType.oceanBlock,
+      bedrooms: 5,
+      full: 3,
+      half: 2,
+      sleeps: 16,
+      from: 4500,
+      to: 14000,
+      color: 0xFF06A77D,
+      badges: ['Pool', 'New Build'],
+      rating: 4.8,
+      reviews: 9,
+    ),
+    _make(
+      '3',
+      'Heated Saltwater Pool — Perfect for Family Shares',
+      'Ship Bottom',
+      PropertyType.house,
+      LocationType.oceanBlock,
+      bedrooms: 4,
+      full: 3,
+      half: 1,
+      sleeps: 10,
+      from: 6000,
+      to: 8950,
+      color: 0xFFF4A259,
+      badges: ['Heated Pool'],
+      rating: 4.7,
+      reviews: 21,
+    ),
+    _make(
+      '4',
+      'Bayfront Bliss — Sunset Dock',
+      'Brant Beach',
+      PropertyType.house,
+      LocationType.bayfront,
+      bedrooms: 4,
+      full: 2,
+      half: 1,
+      sleeps: 10,
+      from: 12000,
+      color: 0xFF8E7DBE,
+      badges: ['Bayfront', 'Dock'],
+      rating: 5.0,
+      reviews: 6,
+    ),
+    _make(
+      '5',
+      'Pet-Friendly Townhouse — \$300 Off Select Weeks',
+      'Beach Haven',
+      PropertyType.townhouse,
+      LocationType.midIsland,
+      bedrooms: 3,
+      full: 2,
+      half: 1,
+      sleeps: 8,
+      from: 1500,
+      to: 5800,
+      color: 0xFFE8743B,
+      badges: ['Pet Friendly', 'Special Offer'],
+      rating: 4.4,
+      reviews: 18,
+    ),
+    _make(
+      '6',
+      'Panoramic Views — Pool, Elevator & Pet Friendly',
+      'Surf City',
+      PropertyType.house,
+      LocationType.oceanfront,
+      bedrooms: 4,
+      full: 3,
+      half: 0,
+      sleeps: 10,
+      from: 4900,
+      to: 5900,
+      color: 0xFF2E86AB,
+      badges: ['Pool', 'Elevator', 'Pet Friendly'],
+      rating: 4.6,
+      reviews: 14,
+    ),
+    _make(
+      '7',
+      'Newly Updated Beach Block',
+      'Barnegat Light',
+      PropertyType.house,
+      LocationType.oceanBlock,
+      bedrooms: 6,
+      full: 4,
+      half: 0,
+      sleeps: 15,
+      from: 4500,
+      to: 11000,
+      color: 0xFF06A77D,
+      badges: ['Beach Block'],
+      rating: 4.9,
+      reviews: 11,
+    ),
+    _make(
+      '8',
+      'Luxury Oceanfront Retreat — Rooftop Pool',
+      'Surf City',
+      PropertyType.house,
+      LocationType.oceanfront,
+      bedrooms: 6,
+      full: 5,
+      half: 1,
+      sleeps: 12,
+      from: 45000,
+      to: 55000,
+      color: 0xFF222E50,
+      badges: ['Oceanfront', 'Rooftop Pool', 'Luxury'],
+      rating: 5.0,
+      reviews: 8,
+    ),
+    _make(
+      '9',
+      'Cozy & Spacious — Bikes, Toys, Game Room',
+      'Brant Beach',
+      PropertyType.house,
+      LocationType.bayside,
+      bedrooms: 4,
+      full: 2,
+      half: 1,
+      sleeps: 10,
+      from: 4750,
+      to: 6250,
+      color: 0xFFF4A259,
+      badges: ['Game Room'],
+      rating: 4.5,
+      reviews: 23,
+    ),
+    _make(
+      '10',
+      'Bay Breeze Escape',
+      'North Beach',
+      PropertyType.house,
+      LocationType.bayside,
+      bedrooms: 4,
+      full: 2,
+      half: 0,
+      sleeps: 9,
+      from: 6000,
+      to: 8500,
+      color: 0xFF8E7DBE,
+      badges: ['Bayside'],
+      rating: 4.7,
+      reviews: 10,
+    ),
+    _make(
+      '11',
+      'Charming Cottage Near the Bay',
+      'Beach Haven Park',
+      PropertyType.cottage,
+      LocationType.midIsland,
+      bedrooms: 2,
+      full: 1,
+      half: 0,
+      sleeps: 5,
+      from: 1975,
+      color: 0xFF06A77D,
+      badges: ['Cottage'],
+      rating: 4.3,
+      reviews: 7,
+    ),
+    _make(
+      '12',
+      'Bright Bay Duplex — Walk to Everything',
+      'Holgate',
+      PropertyType.duplex,
+      LocationType.bayside,
+      bedrooms: 3,
+      full: 2,
+      half: 0,
+      sleeps: 8,
+      from: 1200,
+      to: 3950,
+      color: 0xFFE8743B,
+      badges: ['Duplex'],
+      rating: 4.2,
+      reviews: 15,
+    ),
+  ]);
 
   Listing _make(
     String id,
@@ -259,21 +437,27 @@ class MockListingsRepository implements ListingsRepository {
           changeoverDay: 'Sat - Sat',
         ),
       ],
-      availability: _availability(DateTime(2026, 6, 1),
-          weeksBooked: 1 + (id.hashCode % 4).abs()),
+      availability: _availability(
+        DateTime(2026, 6, 1),
+        weeksBooked: 1 + (id.hashCode % 4).abs(),
+      ),
       reviews: List.generate(
         reviews.clamp(0, 3),
         (i) => Review(
           author: ['The Murphys', 'D. Chen', 'Sarah & Mike'][i % 3],
           rating: rating == 0 ? 5 : rating,
           date: DateTime(2025, 8 - i, 14),
-          body: 'Fantastic week in $townName — the house was spotless and '
+          body:
+              'Fantastic week in $townName — the house was spotless and '
               'exactly as pictured. We will be back next summer!',
         ),
       ),
       owner: Owner(
-        name: ['Heidi Raney', 'Coastal Stays LLC', 'Mark Delaney'][
-            id.hashCode.abs() % 3],
+        name: [
+          'Heidi Raney',
+          'Coastal Stays LLC',
+          'Mark Delaney',
+        ][id.hashCode.abs() % 3],
         verified: true,
         listingCount: 2 + id.hashCode.abs() % 5,
         responseTime: 'within a few hours',
@@ -282,14 +466,18 @@ class MockListingsRepository implements ListingsRepository {
   }
 
   Future<T> _delayed<T>(T value) =>
-      Future.delayed(const Duration(milliseconds: 350), () => value);
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (failRequests) {
+          throw Exception('Injected network failure (test fault)');
+        }
+        return value;
+      });
 
   @override
   Future<List<Listing>> fetchAll() => _delayed(_catalog);
 
   @override
-  Future<List<Listing>> fetchFeatured() =>
-      _delayed(_catalog.take(8).toList());
+  Future<List<Listing>> fetchFeatured() => _delayed(_catalog.take(8).toList());
 
   @override
   Future<Listing?> byId(String id) =>
@@ -297,9 +485,11 @@ class MockListingsRepository implements ListingsRepository {
 
   @override
   Future<List<Listing>> byOwner(String ownerName, {String? excludeId}) =>
-      _delayed(_catalog
-          .where((l) => l.owner.name == ownerName && l.id != excludeId)
-          .toList());
+      _delayed(
+        _catalog
+            .where((l) => l.owner.name == ownerName && l.id != excludeId)
+            .toList(),
+      );
 
   @override
   Future<List<Listing>> search(ListingQuery q) {

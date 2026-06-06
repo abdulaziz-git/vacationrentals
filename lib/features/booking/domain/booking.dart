@@ -36,8 +36,7 @@ class Booking {
 
   int get cleaningFee => 250;
 
-  int get insuranceCost =>
-      travelInsurance ? (rentalCost * 0.07).round() : 0;
+  int get insuranceCost => travelInsurance ? (rentalCost * 0.07).round() : 0;
 
   /// 12.625% NJ short-term rental tax (state + occupancy), illustrative.
   int get taxes => (rentalCost * 0.12625).round();

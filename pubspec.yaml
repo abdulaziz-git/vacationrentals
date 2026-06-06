@@ -1,5 +1,5 @@
 name: vacationrentals
-description: "A new Flutter project."
+description: "VRLBI — Book Long Beach Island vacation rentals direct with owners, no booking fees."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -31,6 +31,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Localization delegates (date pickers, selection menus) + device-locale
+  # propagation to intl.
+  flutter_localizations:
+    sdk: flutter
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -45,6 +50,12 @@ dependencies:
 
   # Date / currency formatting for rates and availability.
   intl: ^0.20.2
+
+  # Open external URLs (privacy policy / terms, maps) from in-app affordances.
+  url_launcher: ^6.3.1
+
+  # Native share sheet (UIActivityViewController) for sharing a listing.
+  share_plus: ^10.1.4
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +78,11 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Real LBI listing photos extracted from the VRLBI scrape, assigned to
+  # listings by the mock repository.
+  assets:
+    - assets/listing_photos/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../listings/domain/listing.dart';
@@ -17,13 +18,15 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
   int _monthOffset = 0;
 
   Map<DateTime, DayStatus> get _byDate => {
-        for (final d in widget.days)
-          DateTime(d.date.year, d.date.month, d.date.day): d.status
-      };
+    for (final d in widget.days)
+      DateTime(d.date.year, d.date.month, d.date.day): d.status,
+  };
 
   @override
   Widget build(BuildContext context) {
-    final first = widget.days.isEmpty ? DateTime(2026, 6) : widget.days.first.date;
+    final first = widget.days.isEmpty
+        ? DateTime(2026, 6)
+        : widget.days.first.date;
     final base = DateTime(first.year, first.month + _monthOffset);
     return Column(
       children: [
@@ -37,9 +40,13 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
             ),
             Expanded(
               child: Center(
-                child: Text(_monthName(base),
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700, fontSize: 16)),
+                child: Text(
+                  _monthName(base),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
               ),
             ),
             IconButton(
@@ -68,8 +75,18 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
 
   String _monthName(DateTime d) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June', 'July',
-      'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[d.month - 1]} ${d.year}';
   }
@@ -81,15 +98,20 @@ class _Weekdays extends StatelessWidget {
     const labels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
     return Row(
       children: labels
-          .map((l) => Expanded(
-                child: Center(
-                  child: Text(l,
-                      style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+          .map(
+            (l) => Expanded(
+              child: Center(
+                child: Text(
+                  l,
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -111,7 +133,7 @@ class _MonthGrid extends StatelessWidget {
     for (var day = 1; day <= daysInMonth; day++) {
       final date = DateTime(month.year, month.month, day);
       final status = byDate[date];
-      cells.add(_DayCell(day: day, status: status));
+      cells.add(_DayCell(date: date, status: status));
     }
     return GridView.count(
       crossAxisCount: 7,
@@ -124,15 +146,24 @@ class _MonthGrid extends StatelessWidget {
 }
 
 class _DayCell extends StatelessWidget {
-  const _DayCell({required this.day, this.status});
-  final int day;
+  const _DayCell({required this.date, this.status});
+  final DateTime date;
   final DayStatus? status;
 
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(status);
     final available = status == DayStatus.available;
-    return Padding(
+    final booked = status == DayStatus.notAvailable;
+    // Non-colour status cue (WCAG 1.4.1): booked is struck through, pending is
+    // underlined, available carries a border — so colour-blind / low-vision
+    // users can still distinguish states.
+    final decoration = booked
+        ? TextDecoration.lineThrough
+        : status == DayStatus.pending
+        ? TextDecoration.underline
+        : TextDecoration.none;
+    final cell = Padding(
       padding: const EdgeInsets.all(2),
       child: Container(
         decoration: BoxDecoration(
@@ -143,18 +174,29 @@ class _DayCell extends StatelessWidget {
               : null,
         ),
         child: Center(
-          child: Text('$day',
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: status == DayStatus.notAvailable
-                      ? Colors.grey.shade400
-                      : AppTheme.deepSea)),
+          child: Text(
+            '${date.day}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              decoration: decoration,
+              color: booked ? Colors.grey.shade400 : AppTheme.deepSea,
+            ),
+          ),
         ),
       ),
     );
+    final label = '${DateFormat.MMMMd().format(date)}, ${_statusText(status)}';
+    return Semantics(label: label, child: cell);
   }
 }
+
+String _statusText(DayStatus? s) => switch (s) {
+  DayStatus.available => 'available',
+  DayStatus.pending => 'pending',
+  DayStatus.notAvailable => 'booked',
+  DayStatus.noRates || null => 'no rates',
+};
 
 Color _statusColor(DayStatus? s) {
   switch (s) {

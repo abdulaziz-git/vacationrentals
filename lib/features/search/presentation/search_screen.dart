@@ -78,12 +78,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ],
               ),
             ),
+            _QuickFilterChips(
+              activeCount: query.activeFilterCount,
+              onReset: () {
+                ref.read(searchQueryProvider.notifier).reset();
+                _text.clear();
+              },
+              onOpen: () => showFiltersSheet(context, ref),
+            ),
             _ResultsBar(
               view: view,
-              onView: (v) =>
-                  ref.read(resultsViewProvider.notifier).state = v,
+              onView: (v) => ref.read(resultsViewProvider.notifier).state = v,
               count: results.maybeWhen(
-                  data: (d) => d.length, orElse: () => null),
+                data: (d) => d.length,
+                orElse: () => null,
+              ),
             ),
             Expanded(
               child: results.when(
@@ -108,7 +117,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           _text.clear();
                         },
                         style: FilledButton.styleFrom(
-                            minimumSize: const Size(200, 48)),
+                          minimumSize: const Size(200, 48),
+                        ),
                         child: const Text('Clear all filters'),
                       ),
                     );
@@ -117,10 +127,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     return MapResultsView(items: items);
                   }
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    // Bottom pad clears the floating nav (extendBody: true).
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
                     itemCount: items.length,
                     itemBuilder: (context, i) =>
-                        ListingCard(listing: items[i]),
+                        ListingListRow(listing: items[i]),
                   );
                 },
               ),
@@ -155,8 +166,10 @@ class _FilterButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: Icon(Icons.tune,
-                  color: count > 0 ? Colors.white : AppTheme.deepSea),
+              child: Icon(
+                Icons.tune,
+                color: count > 0 ? Colors.white : AppTheme.deepSea,
+              ),
             ),
           ),
         ),
@@ -167,12 +180,17 @@ class _FilterButton extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(5),
               decoration: const BoxDecoration(
-                  color: AppTheme.sunset, shape: BoxShape.circle),
-              child: Text('$count',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700)),
+                color: AppTheme.heart,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
       ],
@@ -180,9 +198,94 @@ class _FilterButton extends StatelessWidget {
   }
 }
 
+/// Horizontal quick-filter chips (All / Type / Region / Price). "All" is the
+/// active state when no filters are set; the others open the full filters
+/// sheet. Mirrors the Lists.png chip row.
+class _QuickFilterChips extends StatelessWidget {
+  const _QuickFilterChips({
+    required this.activeCount,
+    required this.onReset,
+    required this.onOpen,
+  });
+  final int activeCount;
+  final VoidCallback onReset;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final allActive = activeCount == 0;
+
+    // "All" is a solid pill toggle; the category chips read as dropdown
+    // filters (chevron) that open the full sheet.
+    Widget chip(
+      String label, {
+      required bool selected,
+      bool dropdown = false,
+      required VoidCallback onTap,
+    }) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 8),
+        child: Material(
+          color: selected ? AppTheme.ocean : Colors.white,
+          shape: StadiumBorder(
+            side: BorderSide(
+              color: selected ? AppTheme.ocean : Colors.grey.shade300,
+            ),
+          ),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: selected ? Colors.white : AppTheme.deepSea,
+                    ),
+                  ),
+                  if (dropdown) ...[
+                    const SizedBox(width: 3),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 17,
+                      color: Colors.grey.shade500,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 38,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          chip('All', selected: allActive, onTap: onReset),
+          chip('Type', selected: false, dropdown: true, onTap: onOpen),
+          chip('Region', selected: false, dropdown: true, onTap: onOpen),
+          chip('Price', selected: false, dropdown: true, onTap: onOpen),
+        ],
+      ),
+    );
+  }
+}
+
 class _ResultsBar extends StatelessWidget {
-  const _ResultsBar(
-      {required this.view, required this.onView, required this.count});
+  const _ResultsBar({
+    required this.view,
+    required this.onView,
+    required this.count,
+  });
   final ResultsView view;
   final ValueChanged<ResultsView> onView;
   final int? count;
@@ -202,24 +305,28 @@ class _ResultsBar extends StatelessWidget {
             showSelectedIcon: false,
             style: ButtonStyle(
               visualDensity: VisualDensity.compact,
-              backgroundColor: WidgetStateProperty.resolveWith((s) =>
-                  s.contains(WidgetState.selected)
-                      ? AppTheme.ocean
-                      : Colors.white),
-              foregroundColor: WidgetStateProperty.resolveWith((s) =>
-                  s.contains(WidgetState.selected)
-                      ? Colors.white
-                      : AppTheme.deepSea),
+              backgroundColor: WidgetStateProperty.resolveWith(
+                (s) => s.contains(WidgetState.selected)
+                    ? AppTheme.ocean
+                    : Colors.white,
+              ),
+              foregroundColor: WidgetStateProperty.resolveWith(
+                (s) => s.contains(WidgetState.selected)
+                    ? Colors.white
+                    : AppTheme.deepSea,
+              ),
             ),
             segments: const [
               ButtonSegment(
-                  value: ResultsView.list,
-                  icon: Icon(Icons.view_list, size: 18),
-                  label: Text('List')),
+                value: ResultsView.list,
+                icon: Icon(Icons.view_list, size: 18),
+                label: Text('List'),
+              ),
               ButtonSegment(
-                  value: ResultsView.map,
-                  icon: Icon(Icons.map_outlined, size: 18),
-                  label: Text('Map')),
+                value: ResultsView.map,
+                icon: Icon(Icons.map_outlined, size: 18),
+                label: Text('Map'),
+              ),
             ],
             selected: {view},
             onSelectionChanged: (s) => onView(s.first),

@@ -32,8 +32,10 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('How was your stay?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          const Text(
+            'How was your stay?',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 16),
           Center(
             child: Row(
@@ -43,8 +45,10 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
                 return IconButton(
                   iconSize: 44,
                   onPressed: () => setState(() => _rating = i + 1),
-                  icon: Icon(filled ? Icons.star : Icons.star_border,
-                      color: const Color(0xFFF5A623)),
+                  icon: Icon(
+                    filled ? Icons.star : Icons.star_border,
+                    color: AppTheme.star,
+                  ),
                 );
               }),
             ),
@@ -61,12 +65,16 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
                 _ => 'Excellent',
               },
               style: TextStyle(
-                  color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Your review',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          const Text(
+            'Your review',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller,
@@ -79,8 +87,10 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          Text('Minimum 10 characters',
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+          Text(
+            'Minimum 10 characters',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+          ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: canSubmit
@@ -89,7 +99,9 @@ class _WriteReviewScreenState extends ConsumerState<WriteReviewScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         backgroundColor: AppTheme.seafoam,
-                        content: Text('Thanks! Your review has been submitted.'),
+                        content: Text(
+                          'Thanks! Your review has been submitted.',
+                        ),
                       ),
                     );
                   }
